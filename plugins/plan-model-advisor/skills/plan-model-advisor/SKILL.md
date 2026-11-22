@@ -19,6 +19,18 @@ Read [references/model-matrix.md](./references/model-matrix.md) for current mode
 
 ## Procedure
 
+### 0. Check Model Matrix Freshness (Live Preflight)
+Before scoring the plan, verify that [references/model-matrix.md](./references/model-matrix.md) reflects the models currently available in Antigravity:
+
+1. Call `swarm` with `action: "models"` and `all: true` (read-only; does not launch a swarm) to fetch the live list of available model IDs and display names.
+2. Compare the live model IDs against the **Tracked Model Catalog** in [references/model-matrix.md](./references/model-matrix.md):
+   - **Up to date** (no unrecognized model IDs and no currently recommended models missing): proceed directly to Step 1 without extra web searches.
+   - **Stale** (new models/effort tiers appeared, or recommended models were removed):
+     1. Run targeted `search_web` queries on the new/changed models to gather their positioning, coding/security/reasoning strengths, effort tiers, speed/quota tradeoffs, and Orchestrator support.
+     2. Update [references/model-matrix.md](./references/model-matrix.md) (the `Last verified` date, **Tracked Model Catalog**, **Available Models**, **Quick Decision Matrix by Profile**, and **Swarm Patterns**) so future sessions benefit too. *(Do not auto-commit or auto-push if the plugin lives in a git repo; note the file update in your brief so the user can review and commit it.)*
+     3. If `model-matrix.md` is not writable or web search is unavailable, still factor the live model list into this brief and flag that the matrix needs a manual refresh.
+   - **If `swarm` is unavailable:** Proceed with [references/model-matrix.md](./references/model-matrix.md) and note the `Last verified` date in the brief.
+
 ### 1. Gather Context & Resolve Profile
 1. Read the target implementation plan (e.g., `implementation_plan.md`, a topic plan artifact, or the plan in chat).
 2. If working inside a workspace, scan the root `AGENTS.md` (if present) to note critical safety invariants, governance test gates, and multi-repo boundaries.
@@ -50,7 +62,7 @@ Consult [references/model-matrix.md](./references/model-matrix.md) for the activ
 ### 4. Produce the Model & Swarm Execution Brief
 Present a concise, scannable brief using this structure:
 
-1. **Profile & Risk Summary** — Active profile (`quality-first` / `balanced` / `quota-saver`) + 1–2 lines summarizing the plan's primary risk drivers and relevant workspace invariants.
+1. **Profile & Risk Summary** — Active profile (`quality-first` / `balanced` / `quota-saver`), matrix freshness status (only call out details if the matrix was just updated or is stale), and 1–2 lines summarizing the plan's primary risk drivers and relevant workspace invariants.
 2. **Recommended Execution Settings** — Primary model + effort level (and whether a single setting covers the whole plan or a phase split is worthwhile).
 3. **Phase-by-Phase Routing Table** *(include when the plan has 2+ distinct phases)*:
    - Columns: `Phase` | `Recommended Model & Effort` | `Why` | `Scope Guardrail`
@@ -67,7 +79,8 @@ Present a concise, scannable brief using this structure:
 
 ## Validation
 Before finalizing the brief, verify that:
-- Every recommended model name and effort tier matches an actual option in [references/model-matrix.md](./references/model-matrix.md).
+- Step 0 live model freshness check was performed (and `references/model-matrix.md` was updated first if new/retired models were detected).
+- Every recommended model name and effort tier matches an actual live option in [references/model-matrix.md](./references/model-matrix.md).
 - Every recommendation ties directly to specific files, phases, or risks in the reviewed plan (no generic boilerplate).
 - Orchestrator is *not* recommended for security-critical or poorly test-covered logic.
 - If Swarm is recommended: no two concurrent authors own overlapping files, shared prerequisites are sequenced first, and any cross-family verifier starts fresh (not forked) with explicit model pinning.

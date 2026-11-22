@@ -4,6 +4,7 @@ An Antigravity plugin that reviews your implementation plans before you write co
 
 ## Why Use It?
 
+- **Self-updating model catalog:** Runs a read-only preflight check against Antigravity's live model list before scoring your plan—if new models or effort tiers have launched (or older ones were retired), it researches the changes and refreshes `references/model-matrix.md` automatically before making recommendations.
 - **Stop guessing effort tiers:** Know when `Gemini 4 Carbon (High)` or `Gemini 4 Neon (XHigh)` is actually worth it vs. when `Orchestrator (Neon)` or `Gemini 4 Hydrogen` is the smarter call.
 - **Prevent frontier over-engineering:** Automatically flags surgical or verbatim steps where heavy reasoning models tend to be *too* helpful and refactor out-of-scope code.
 - **Right-size swarms (`/teamwork`):** Recommends single-agent vs. a 2-worker adversarial swarm vs. a parallel multi-worker swarm—complete with non-overlapping ownership, workspace modes (`share`/`inherit`), and a ready-to-paste launch prompt that pins per-worker models.
@@ -33,8 +34,8 @@ You can always override it in any prompt (e.g., *"Review this plan using the `ba
 - *"What model and swarm settings should we use for this migration plan (`quality-first`)?"*
 - *"Flag any surgical steps in this plan where a frontier model might over-engineer."*
 
-## Updating for Future Models
+## Automatic Freshness Checks
 
-All model tiers, benchmark notes, and swarm patterns live in a single reference file:
-[`skills/plan-model-advisor/references/model-matrix.md`](./skills/plan-model-advisor/references/model-matrix.md).
-When new models ship, updating that file updates the skill across every project automatically.
+All model IDs, benchmark notes, and swarm patterns live in [`skills/plan-model-advisor/references/model-matrix.md`](./skills/plan-model-advisor/references/model-matrix.md). At the start of each review, the skill compares the **Tracked Model Catalog** against Antigravity's live model list (`swarm{action:"models", all:true}`):
+- If the catalog matches, it skips web research and goes straight to reviewing your plan.
+- If new models or effort tiers appear (or recommended models are retired), it researches the delta, updates `model-matrix.md` in place (without auto-committing), and bases its recommendations on the refreshed catalog.

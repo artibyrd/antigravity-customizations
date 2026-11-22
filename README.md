@@ -13,7 +13,7 @@ Every plugin in [`plugins/`](./plugins) is self-contained and intentionally scop
 
 | Plugin | Components | What It Does | Docs |
 | :--- | :--- | :--- | :--- |
-| **`plan-model-advisor`** | 1 Skill (`plan-model-advisor`) | Reviews an implementation plan before coding and outputs a **Model & Swarm Execution Brief**—mapping each phase to the right Gemini 4 / Claude model, effort level, over-engineering guardrails, cross-family review pass, and `/teamwork` swarm roster across `quality-first`, `balanced`, and `quota-saver` profiles. | [Plugin README](./plugins/plan-model-advisor/README.md) |
+| **`plan-model-advisor`** | 1 Skill (`plan-model-advisor`) | Reviews an implementation plan before coding—first checking Antigravity's live model catalog and auto-refreshing its reference matrix if new models launched—then outputs a **Model & Swarm Execution Brief** with model/effort routing, over-engineering guardrails, cross-family review triggers, and `/teamwork` swarm rosters across `quality-first`, `balanced`, and `quota-saver` profiles. | [Plugin README](./plugins/plan-model-advisor/README.md) |
 
 ---
 

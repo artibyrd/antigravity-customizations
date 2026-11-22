@@ -1,6 +1,21 @@
 # Antigravity Model & Swarm Matrix
 
-*Last updated: November 2026. Update this reference file when new models or effort tiers launch.*
+*Last verified: 2026-11-22. Checked automatically during Step 0 of `plan-model-advisor` against `swarm{action:"models", all:true}`.*
+
+---
+
+## Tracked Model Catalog
+
+Exact live model IDs reflected in this matrix (used by Step 0 to detect newly released or retired models):
+
+- **Gemini 4 Neon:** `gemini-4-neon-low`, `gemini-4-neon-medium`, `gemini-4-neon-high`, `gemini-4-neon-xhigh`
+- **Gemini 4 Carbon:** `gemini-4-carbon-low`, `gemini-4-carbon-medium`, `gemini-4-carbon-high`
+- **Gemini 4 Argon:** `gemini-4-argon-low`, `gemini-4-argon-medium`, `gemini-4-argon-high`
+- **Gemini 4 Hydrogen:** `gemini-4-hydrogen-low`, `gemini-4-hydrogen-medium`, `gemini-4-hydrogen-high`, `gemini-4-hydrogen-xhigh`
+- **Orchestrator:** `gemini-pro-orchestrator` (`Orchestrator (Carbon)`), `gemini-pro-orchestrator-neon` (`Orchestrator (Neon)`), `gemini-pro-orchestrator-argon` (`Orchestrator (Argon)`)
+- **Legacy / Other Gemini:** `gemini-3.8-flash-low`, `gemini-3.8-flash-medium`, `gemini-3.8-flash-high`
+- **Claude:** `claude-opus-5-5-low`, `claude-opus-5-5-medium`, `claude-opus-5-5-high`, `claude-sonnet-5-5-low`, `claude-sonnet-5-5-medium`, `claude-sonnet-5-5-high`
+- **Open Weights:** `gpt-oss-120b-medium`
 
 ---
 
