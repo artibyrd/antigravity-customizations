@@ -1,0 +1,20 @@
+{
+  "name": "plan-model-advisor",
+  "displayName": "Plan Model Advisor",
+  "version": "1.0.0",
+  "description": "Reviews implementation plans and recommends optimal Antigravity model settings, thinking effort levels, cross-family adversarial reviews, and swarm configurations tailored to your risk and quota profile.",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Review my implementation plan and recommend the best model and swarm settings",
+    "Analyze this plan using the balanced profile and flag over-engineering risks",
+    "Should we use a 2-worker adversarial swarm or a single agent for this refactor?"
+  ]
+}

@@ -1,0 +1,40 @@
+# Plan Model Advisor
+
+An Antigravity plugin that reviews your implementation plans before you write code and produces a concise **Model & Swarm Execution Brief**—matching each phase to the right Gemini 4 / Claude model, thinking effort level, scope guardrail, cross-family review pass, and `/teamwork` swarm configuration.
+
+## Why Use It?
+
+- **Stop guessing effort tiers:** Know when `Gemini 4 Carbon (High)` or `Gemini 4 Neon (XHigh)` is actually worth it vs. when `Orchestrator (Neon)` or `Gemini 4 Hydrogen` is the smarter call.
+- **Prevent frontier over-engineering:** Automatically flags surgical or verbatim steps where heavy reasoning models tend to be *too* helpful and refactor out-of-scope code.
+- **Right-size swarms (`/teamwork`):** Recommends single-agent vs. a 2-worker adversarial swarm vs. a parallel multi-worker swarm—complete with non-overlapping ownership, workspace modes (`share`/`inherit`), and a ready-to-paste launch prompt that pins per-worker models.
+- **Adapt to your subscription tier:** Supports three optimization profiles (`quality-first`, `balanced`, `quota-saver`) without hardcoding anyone's personal defaults.
+
+## Optimization Profiles
+
+| Profile | Intended For | Strategy |
+| :--- | :--- | :--- |
+| **`quality-first`** | Ultra / unconstrained quota | Standalone frontier models (`Carbon High`, `Neon High/XHigh`), skips Orchestrator on logic-heavy work, fresh-session `Claude Opus 5.5 (High)` audits, adversarial & parallel swarms. |
+| **`balanced`** *(default)* | Pro / quota-aware daily driver | `Orchestrator (Neon)` / `Orchestrator (Carbon)` for multi-file loops, standalone frontier models for planning & security-critical logic, `Hydrogen` for docs/chores. |
+| **`quota-saver`** | Free tier / tight limits / speed | `Gemini 4 Hydrogen (Medium/High/XHigh)` primary driver, `Orchestrator (Neon)` only on complex plans, skips swarms. |
+
+### Setting Your Personal Default
+
+Add a single line to your machine-local `~/.gemini/GEMINI.md` so you never have to repeat your tier:
+
+```markdown
+- Default `plan-model-advisor` profile: `quality-first`
+```
+
+You can always override it in any prompt (e.g., *"Review this plan using the `balanced` profile"*).
+
+## Example Prompts
+
+- *"Review `implementation_plan.md` with `plan-model-advisor` before we start coding."*
+- *"What model and swarm settings should we use for this migration plan (`quality-first`)?"*
+- *"Flag any surgical steps in this plan where a frontier model might over-engineer."*
+
+## Updating for Future Models
+
+All model tiers, benchmark notes, and swarm patterns live in a single reference file:
+[`skills/plan-model-advisor/references/model-matrix.md`](./skills/plan-model-advisor/references/model-matrix.md).
+When new models ship, updating that file updates the skill across every project automatically.
