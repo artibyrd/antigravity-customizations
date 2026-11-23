@@ -1,0 +1,20 @@
+{
+  "name": "fresh-reader",
+  "displayName": "Fresh Reader",
+  "version": "1.0.0",
+  "description": "Spawns a cold-start read-only subagent with zero prior session context to review documentation as a first-time reader, triages 100% of findings with discernment (Accept, Link, or Won't Do), and re-verifies edits until a pass yields zero new changes.",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Run a fresh-reader pass on README.md and docs/ as a first-time visitor",
+    "Review this documentation with fresh eyes and triage every finding before editing",
+    "Check whether this onboarding guide makes sense to someone with zero project context"
+  ]
+}
