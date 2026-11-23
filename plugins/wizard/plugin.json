@@ -1,0 +1,20 @@
+{
+  "name": "wizard",
+  "displayName": "Wizard",
+  "version": "1.0.0",
+  "description": "Generate an interactive bash wizard script that walks a human step by step through procedures only a human can perform—provisioning infrastructure, setting credentials or CI secrets, navigating third-party dashboards, or running one-off migrations and cutovers—built on a consistent reusable bash library with hidden secret entry, idempotent .env upserts, and safe y/N confirmation gates.",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Generate an interactive bash wizard to configure third-party credentials and CI secrets for this repo",
+    "Build a step-by-step bash runbook wizard for this one-off production cutover",
+    "Create a repeatable onboarding setup wizard for our .env and GitHub Actions secrets"
+  ]
+}

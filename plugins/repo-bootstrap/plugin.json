@@ -1,0 +1,20 @@
+{
+  "name": "repo-bootstrap",
+  "displayName": "Repo Bootstrap",
+  "version": "1.0.0",
+  "description": "Optional on-demand interactive initializer for new or unconfigured repositories. Runs a safe read-only environment readiness probe, audits existing files without overwriting them, and scaffolds only the governance and workflow starters you opt into (lean <800-token AGENTS.md, modular safe/gated Justfile, optional review-only CODING_STANDARDS.md, lazy GLOSSARY.md/docs/adr/, and a tests/governance/ placeholder).",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Bootstrap this repository with an opt-in governance and workflow checklist",
+    "Run a safe read-only environment readiness probe and audit what this repo is missing",
+    "Scaffold a lean AGENTS.md and modular safe/gated Justfile for this new repo"
+  ]
+}
