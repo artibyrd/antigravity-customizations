@@ -82,45 +82,192 @@ After editing `~/.gemini/config/plugins.json`, reload Antigravity (or start a ne
 
 ## Plugin Catalog
 
+### Contents
+
+* **[Core Lifecycle Skills (8 Plugins)](#core-lifecycle-skills-8-plugins)**
+  * [`domain-modeling`](#domain-modeling) — Shared `GLOSSARY.md` & immutable ADRs
+  * [`artifact-governance`](#artifact-governance) — Append-only plan/walkthrough ledgers & research notes
+  * [`plan-model-advisor`](#plan-model-advisor) — Pre-coding model, effort & `/teamwork` brief
+  * [`tdd`](#tdd) — Two-phase seam planning & vertical-slice red → green loop
+  * [`code-review`](#code-review) — 3-axis parallel diff review (Standards, Spec, Security)
+  * [`pr-brief`](#pr-brief) — Visual-first PR bodies & Mk1 Eyeball checklists
+  * [`release-lifecycle`](#release-lifecycle) — 4-phase release, changelog sync & `/learn` cadence
+  * [`knowledge-governance`](#knowledge-governance) — `<800`-token `AGENTS.md`, Demotion Highway & retros
+* **[Always-On Guardrail Hooks (2 Plugins)](#always-on-guardrail-hooks-2-plugins)**
+  * [`git-guardrails`](#git-guardrails) — Hard-blocks destructive git ops & prompts on push
+  * [`workspace-hygiene-hooks`](#workspace-hygiene-hooks) — Auto-formats edits & checks stray root files
+* **[Situational Diagnostics, Design & Ops Skills (10 Plugins)](#situational-diagnostics-design--ops-skills-10-plugins)**
+  * [`diagnosing-bugs`](#diagnosing-bugs) — 6-phase hypothesis-driven debugging loop
+  * [`architecture-review`](#architecture-review) — Deep Modules, Design-It-Twice & hotspot audits
+  * [`reality-check-audit`](#reality-check-audit) — Cross-model adversarial outsider assessment
+  * [`fresh-reader`](#fresh-reader) — Multi-persona top-down cold-start doc review
+  * [`writing-for-agents`](#writing-for-agents) — Prompt craft & Antigravity plugin/manifest reference
+  * [`session-handoff`](#session-handoff) — Compact cross-session & cross-model handoff briefs
+  * [`bootstrap-approvals`](#bootstrap-approvals) — One-pass safe read-command approval priming
+  * [`repo-bootstrap`](#repo-bootstrap) — Optional Day-0 governance file scaffolder
+  * [`prototype`](#prototype) — Throwaway interactive HTML logic & UI demos
+  * [`wizard`](#wizard) — Interactive bash runbooks for human-only ops
+* **[Architecture & Workflow Guides](#architecture--workflow-guides)**
+  * [Agentic Pair Programming Protocol](./docs/agentic-pair-programming-protocol.md)
+  * [Upstream Adaptations, Provenance & Deviations](./docs/upstream-adaptations-and-deviations.md)
+
 Every plugin carries a short **Origin** label:
 * **`Original`** *(6 plugins)* — Authored natively for Google Antigravity from our own workflows.
 * **`Combined`** *(9 plugins — Original + [`mattpocock/skills`](https://github.com/mattpocock/skills), MIT)* — Synthesizes upstream concepts with our own Antigravity patterns and guardrails; each plugin's `README.md` explains what came from upstream vs. what was added or altered.
 * **`Adapted`** *(5 plugins — [`mattpocock/skills`](https://github.com/mattpocock/skills), MIT)* — Directly translated for Antigravity's native conventions while preserving the core upstream workflow.
 
+---
+
 ### Core Lifecycle Skills (8 Plugins)
 
-| Plugin | Origin | What It Does | Docs |
-| :--- | :--- | :--- | :--- |
-| **`domain-modeling`** | `Adapted` | Sharpens business/product vocabulary on demand in a pure-domain `GLOSSARY.md` (no code or database jargon) and writes immutable Architecture Decision Records (`docs/adr/`, permanent notes explaining *why* a hard-to-reverse choice was made); pairs with Antigravity's native `/grill-me` requirements interview. | [README](./plugins/domain-modeling/README.md) |
-| **`artifact-governance`** | `Combined` | Keeps Antigravity Session Artifacts (stored outside git per chat and viewable in Antigravity's Artifacts pane: `implementation_plan.md`, `walkthrough.md`) as append-only ledgers (with session-log recovery if overwritten), separates actively updated *Living* docs from frozen *Historical* snapshots, keeps scratch scripts out of git, and saves cited research notes. | [README](./plugins/artifact-governance/README.md) |
-| **`plan-model-advisor`** | `Combined` | Reviews an implementation plan before coding—auto-checking Antigravity's live model catalog, flagging oversized phases to split into focused ~150k-token chunks (so the AI's context window stays sharp), and outputting a **Model & Swarm Execution Brief** (whether to use one agent or multiple cooperating agents via `/teamwork`) across [`quality-first`, `balanced`, and `quota-saver` profiles](#keeping-personal-preferences-decoupled). | [README](./plugins/plan-model-advisor/README.md) |
-| **`tdd`** | `Combined` | Two-phase **Test-Driven Development (TDD)**: pairs with `/plan` to pick stable public test seams (entry points like HTTP endpoints or exported functions) and thin vertical slices (one behavior test + minimal code at a time) *before* coding or multi-agent swarms, then runs red → green loops (failing test → minimal code to pass, saving bigger structural cleanups for review)—banning mocks tied to private internals, tautological assertions (tests that mirror production math so they always pass), and test-file helper stand-ins (copy-pasting simplified logic into the test instead of importing real production code) while keeping tests fast, offline, and deterministic (*hermetic*). | [README](./plugins/tdd/README.md) |
-| **`code-review`** | `Combined` | Spawns three parallel fresh read-only subagents (separate AI workers with zero prior chat bias) over committed branch changes (`git diff <fixed-point>...HEAD`, e.g., commits since `main`): **Standards** (+ 12 Fowler code smells—classic maintainability warnings like long parameter lists), **Spec + Reality Check** (missing requirements & hardcoded/fake production behavior), and **Security**, reported side by side as three separate reviews (never merged into one summary, so critical bugs don't get buried). | [README](./plugins/code-review/README.md) |
-| **`pr-brief`** | `Combined` | Drafts concise, visual-first pull request bodies and human visual inspection (*Mk1 Eyeball*) checklists: smallest clarifying diagram/diff, Before/After evidence, and Merge Danger (One-Way vs. Two-Way Door—hard vs. easy to roll back—plus blast radius: what breaks if it fails). Credits Matt Pocock and Dex Horthy (`humanlayer/show-me`). | [README](./plugins/pr-brief/README.md) |
-| **`release-lifecycle`** | `Original` | Guides the 4-phase delivery cadence (Phase 1: running your repo's tests/linters [*local QA*], staging verification & human sign-off → Phase 2: feature release → Phase 3: native `/learn` session retrospective → Phase 4: optional lean patch release for newly added tests or checks), keeping `CHANGELOG.md` and `ROADMAP.md` synced and degrading cleanly when `gh` (GitHub CLI) or CI/CD is absent. | [README](./plugins/release-lifecycle/README.md) |
-| **`knowledge-governance`** | `Combined` | Keeps `AGENTS.md` (your repo's always-loaded agent instruction file) under an 800-token ceiling (~1–2 short pages, since it loads into every prompt and bloat causes the AI to ignore rules) by moving checkable rules into automated tests (the *Demotion Highway*), gating native `/learn` (session retrospective) proposals, supporting optional review-only `CODING_STANDARDS.md` (read only during `code-review` so it doesn't clutter coding prompts), and running a 7-category session retrospective. | [README](./plugins/knowledge-governance/README.md) |
+#### `domain-modeling`
+`Adapted` · [Plugin README](./plugins/domain-modeling/README.md)
+
+Keeps shared business vocabulary and hard-to-reverse design choices crisp; pairs with Antigravity's native `/grill-me` requirements interview.
+* **On-demand `GLOSSARY.md`:** Captures pure business/product terms (zero database or framework jargon).
+* **Immutable ADRs (`docs/adr/`):** Writes permanent Architecture Decision Records explaining *why* a hard-to-reverse trade-off was made.
+
+#### `artifact-governance`
+`Combined` · [Plugin README](./plugins/artifact-governance/README.md)
+
+Keeps Antigravity Session Artifacts (stored outside git per chat in the Artifacts pane) organized and durable.
+* **Append-only ledgers:** Appends new milestones to `implementation_plan.md` and `walkthrough.md` instead of overwriting prior work (with session-log recovery if overwritten).
+* **Clean boundaries:** Separates actively updated *Living* docs from frozen *Historical* snapshots, keeps one-off scratch scripts out of git, and saves cited research notes.
+
+#### `plan-model-advisor`
+`Combined` · [Plugin README](./plugins/plan-model-advisor/README.md)
+
+Reviews your implementation plan *before* coding and outputs a **Model & Swarm Execution Brief**.
+* **Live routing:** Auto-checks Antigravity's live model catalog across [`quality-first`, `balanced`, and `quota-saver` profiles](#keeping-personal-preferences-decoupled) and recommends single-agent vs. multi-agent `/teamwork` swarms.
+* **Context slicing:** Flags oversized phases to split into focused ~150k-token chunks so the AI's context window stays sharp.
+
+#### `tdd`
+`Combined` · [Plugin README](./plugins/tdd/README.md)
+
+Two-phase **Test-Driven Development (TDD)** for fast, offline, deterministic (*hermetic*) tests.
+* **Phase A (Planning with `/plan`):** Picks stable public test seams (entry points like HTTP endpoints or exported functions) and thin vertical slices (one behavior test + minimal code at a time) *before* coding or multi-agent swarms.
+* **Phase B (Execution loop):** Runs red → green loops (failing test → minimal code to pass, saving bigger structural cleanups for review).
+* **Anti-pattern bans:** Rejects mocks tied to private internals, tautological assertions (tests mirroring production math so they always pass), and test-file helper stand-ins (copy-pasting simplified logic instead of importing real production code).
+
+#### `code-review`
+`Combined` · [Plugin README](./plugins/code-review/README.md)
+
+Spawns three parallel fresh read-only subagents (separate AI workers with zero prior chat bias) over committed branch changes (`git diff <fixed-point>...HEAD`, e.g., commits since `main`), reported side by side as three separate reviews (never merged into one summary, so critical bugs don't get buried).
+* **Axis 1 — Standards:** Repo conventions plus 12 Fowler code smells (classic maintainability warnings like long parameter lists).
+* **Axis 2 — Spec + Reality Check:** Missing requirements plus hardcoded/fake production behavior.
+* **Axis 3 — Security:** Concrete exploitable flaws (auth, injection, unsafe HTML sinks, races, secrets).
+
+#### `pr-brief`
+`Combined` · [Plugin README](./plugins/pr-brief/README.md)
+
+Drafts concise, visual-first pull request bodies and human visual inspection (*Mk1 Eyeball*) checklists *(credits Matt Pocock and Dex Horthy, `humanlayer/show-me`)*.
+* **Visual summary:** Smallest clarifying diagram, tree, or scoped diff beside minimal prose.
+* **Evidence & risk:** Before/After proof plus explicit Merge Danger (One-Way vs. Two-Way Door—hard vs. easy to roll back—and blast radius: what breaks if it fails).
+
+#### `release-lifecycle`
+`Original` · [Plugin README](./plugins/release-lifecycle/README.md)
+
+Guides the 4-phase delivery cadence while keeping `CHANGELOG.md` and `ROADMAP.md` synced and degrading cleanly when `gh` (GitHub CLI) or CI/CD is absent.
+* **Phases 1–2:** Running your repo's tests/linters (*local QA*), staging verification & human sign-off → feature release.
+* **Phases 3–4:** Native `/learn` session retrospective → optional lean patch release for newly added tests or checks.
+
+#### `knowledge-governance`
+`Combined` · [Plugin README](./plugins/knowledge-governance/README.md)
+
+Keeps `AGENTS.md` (your repo's always-loaded agent instruction file) under an **800-token ceiling** (~1–2 short pages, since bloat loads into every prompt and causes the AI to ignore rules).
+* **Demotion Highway & `/learn` gate:** Moves checkable rules out of prose into automated tests and gates native `/learn` (session retrospective) proposals.
+* **Review-only standards & retros:** Supports optional `CODING_STANDARDS.md` (read only during `code-review` so it doesn't clutter coding prompts) and runs a 7-category session retrospective.
+
+---
 
 ### Always-On Guardrail Hooks (2 Plugins)
 
-| Plugin | Origin | Hooks Included | What It Does | Docs |
-| :--- | :--- | :--- | :--- | :--- |
-| **`git-guardrails`** | `Combined` | 1 `PreToolUse` hook | Intercepts the agent's shell commands (you can still run any command manually in your own terminal) to hard-block destructive git ops (e.g., `push --force`/`--force-with-lease`/`--mirror`, `reset --hard`, `clean -f`, `branch -D`, `checkout .`, `restore .`) and always prompt before `git push`. Because Antigravity's standard sandbox auto-runs workspace commands while unsandboxed calls (`BypassSandbox: true`) require approval—and returning `allow` from a hook bypasses prompts—it returns `allow` on non-destructive sandboxed commands (matching normal sandbox auto-run) and `ask` on unsandboxed calls so your approval prompts and "Always Allow" cache stay intact. *(Assumes Antigravity's default auto-run sandbox; omit this plugin if you disable sandbox auto-run and require manual approval on every sandboxed command.)* | [README](./plugins/git-guardrails/README.md) |
-| **`workspace-hygiene-hooks`** | `Original` | 2 hooks (`PostToolUse`, `Stop`) | Auto-formats edited workspace files when `ruff`, `prettier`, `gofmt`, or `rustfmt` is installed (`PostToolUse`) and prompts the agent before finishing its reply if stray scratch/log files remain in the repo root (`Stop`, stopping after one reminder so the AI can't loop forever). See its README for supported formatters and filename patterns. | [README](./plugins/workspace-hygiene-hooks/README.md) |
+#### `git-guardrails`
+`Combined` · `1 PreToolUse hook` · [Plugin README](./plugins/git-guardrails/README.md)
+
+Intercepts the agent's shell commands automatically (you can still run any command manually in your own terminal).
+* **Hard blocks (`deny`):** Destructive git ops (e.g., `push --force`/`--force-with-lease`/`--mirror`, `reset --hard`, `clean -f`, `branch -D`, `checkout .`, `restore .`).
+* **Always prompts (`force_ask`):** Standard non-force `git push`.
+* **Sandbox note:** Because Antigravity's standard sandbox auto-runs workspace commands while unsandboxed calls (`BypassSandbox: true`) require approval—and returning `allow` from a hook bypasses prompts—it returns `allow` on non-destructive sandboxed commands (matching normal sandbox auto-run) and `ask` on unsandboxed calls so your approval prompts and "Always Allow" cache stay intact. *(Assumes Antigravity's default auto-run sandbox; omit this plugin if you disable sandbox auto-run and require manual approval on every sandboxed command.)*
+
+#### `workspace-hygiene-hooks`
+`Original` · `2 hooks: PostToolUse, Stop` · [Plugin README](./plugins/workspace-hygiene-hooks/README.md)
+
+Keeps edited files formatted and your repo root clean *(see its README for supported formatters and filename patterns)*.
+* **Auto-format (`PostToolUse`):** Runs `ruff`, `prettier`, `gofmt`, or `rustfmt` on edited workspace files whenever installed.
+* **Root hygiene (`Stop`):** Prompts the agent before finishing its reply if stray scratch/log files remain in the repo root (stopping after one reminder so the AI can't loop forever).
+
+---
 
 ### Situational Diagnostics, Design & Ops Skills (10 Plugins)
 
-| Plugin | Origin | What It Does | Docs |
-| :--- | :--- | :--- | :--- |
-| **`diagnosing-bugs`** | `Adapted` | 6-phase loop for hard bugs and performance regressions: build a tight failing reproduction loop first → minimize → 3–5 testable hypotheses → tagged `[DEBUG-xxxx]` temporary log probes → regression test (locking the bug fixed) at the real public seam → cleanup + secret redaction (includes a guided bash loop script when only a human can trigger the bug). | [README](./plugins/diagnosing-bugs/README.md) |
-| **`architecture-review`** | `Combined` | Surveys frequently changed files (`git log` hotspots) using Ousterhout Deep Modules (*rich behavior behind a small interface*, checking whether deleting a module pushes complexity to callers rather than simply removing a thin pass-through wrapper—the *Deletion Test*), runs parallel *Design-It-Twice* explorations (designing 2+ alternative interfaces in parallel to compare trade-offs), pairs Deep Modules with a ~500-line soft trigger for internal splits, and checks optional stack-specific guardrails (avoiding unsafe HTML injection like `.innerHTML`, browser/Playwright checks, modular [`just`](https://github.com/casey/just) command-runner files). | [README](./plugins/architecture-review/README.md) |
-| **`reality-check-audit`** | `Original` | Runs a structured "Outsider's Honest Assessment" (*What's Genuinely Good → What's Concerning → What's Aspirational vs. Real → Concrete Remediation Plans*)—best run in a fresh chat on a different AI model family (e.g., Claude ↔ Gemini) to break single-model blind spots (*echo chambers*) and catch hardcoded/fake telemetry or doc drift. | [README](./plugins/reality-check-audit/README.md) |
-| **`fresh-reader`** | `Original` | Spawns zero-context read-only subagents across four reader personas (`domain-expert` for specialist rigor; `senior-engineer` → `junior-engineer` → `vibe-coder` for reader clarity) via a top-down cascade (checking structural accuracy before simplifying explanations), triaging 100% of findings (`ACCEPT`, `LINK`, or `WON'T DO`) until a pass produces zero new edits. | [README](./plugins/fresh-reader/README.md) |
-| **`writing-for-agents`** | `Combined` | Reference for writing and trimming plugin instruction & config files (`SKILL.md`, `AGENTS.md`, `plugin.json`, `hooks.json`): concise file pointers, high-signal trigger words, positive phrasing, pruning no-op instructions (rules the model already follows by default), and Antigravity schema constraints. | [README](./plugins/writing-for-agents/README.md) |
-| **`session-handoff`** | `Adapted` | Compacts an active session into a concise Session Artifact (`handoff_<slug>.md`) with absolute file pointers, settled decisions, ruled-out dead ends, and a copy-ready starter prompt to paste into a new chat—ideal for switching AI model families (e.g., Gemini → fresh Claude chat) or starting a fresh session. | [README](./plugins/session-handoff/README.md) |
-| **`bootstrap-approvals`** | `Original` | Primes Antigravity IDE's "Always Allow" cache for unsandboxed or IDE-prompted read commands (e.g., `gh` GitHub CLI, network probes, or workspaces running without auto-run sandboxing) by executing discrete top-level shell reads discovered from the repo (required because the approval cache ignores commands hidden inside helper scripts) so you can click "Always Allow" once per safe command prefix—strictly banning mutating *"Spicy Prefixes"* like `git reset` or `rm`. | [README](./plugins/bootstrap-approvals/README.md) |
-| **`repo-bootstrap`** | `Original` | Optional interactive scaffolder (never required by other plugins): checks local tool readiness and selectively initializes a `<800`-token `AGENTS.md`, a modular `Justfile` (Makefile-like task runner separating read-only *safe* vs. confirmation-*gated* mutating recipes), optional `CODING_STANDARDS.md`, `GLOSSARY.md`, `docs/adr/`, and automated governance test skeletons (placeholder checks for docs, schemas, and project invariants—rules that must always hold true). | [README](./plugins/repo-bootstrap/README.md) |
-| **`prototype`** | `Adapted` | Builds throwaway single-file HTML logic demos or radically different toggleable UI variations to answer design questions fast—rendered via Antigravity Artifacts or `generative_ui` (Antigravity's interactive HTML widget renderer). | [README](./plugins/prototype/README.md) |
-| **`wizard`** | `Adapted` | Generates safe, interactive bash runbooks (from its bundled `template.sh` with silent `read -rs` secret prompts and `[y/N]` confirm gates) walking humans step by step through tasks agents cannot perform (infra provisioning, CI secrets, third-party dashboards, production switchovers). | [README](./plugins/wizard/README.md) |
+#### `diagnosing-bugs`
+`Adapted` · [Plugin README](./plugins/diagnosing-bugs/README.md)
+
+Structured 6-phase loop for hard bugs and performance regressions instead of ad-hoc guessing.
+* **Tight feedback loop:** Failing reproduction first → minimize → 3–5 testable hypotheses → tagged `[DEBUG-xxxx]` temporary log probes.
+* **Lock & clean:** Adds a regression test (locking the bug fixed) at the real public seam, cleans up probes with secret redaction, and includes a guided bash loop script when only a human can trigger the bug.
+
+#### `architecture-review`
+`Combined` · [Plugin README](./plugins/architecture-review/README.md)
+
+Audits frequently changed files (`git log` hotspots) for cleaner module boundaries and maintainability.
+* **Deep Modules & Deletion Test:** Favors rich behavior behind small interfaces (checking whether deleting a module pushes complexity to callers rather than simply removing a thin pass-through wrapper), paired with a ~500-line soft trigger for internal splits.
+* **Design-It-Twice & stack guardrails:** Spawns parallel explorations comparing 2+ alternative interfaces, plus optional stack-specific checks (avoiding unsafe HTML injection like `.innerHTML`, browser/Playwright checks, modular [`just`](https://github.com/casey/just) command-runner files).
+
+#### `reality-check-audit`
+`Original` · [Plugin README](./plugins/reality-check-audit/README.md)
+
+Runs an adversarial "Outsider's Honest Assessment" to break single-model blind spots (*echo chambers*).
+* **Report structure:** *What's Genuinely Good → What's Concerning → What's Aspirational vs. Real → Concrete Remediation Plans*.
+* **Best used cross-family:** Run in a fresh chat on a different AI model family (e.g., Claude ↔ Gemini) to catch hardcoded/fake telemetry or doc drift.
+
+#### `fresh-reader`
+`Original` · [Plugin README](./plugins/fresh-reader/README.md)
+
+Catches curse-of-knowledge blindness in docs using zero-context read-only subagents.
+* **Four personas & top-down cascade:** Targets `domain-expert` (specialist rigor) or cascades `senior-engineer` → `junior-engineer` → `vibe-coder` (checking structural accuracy before simplifying explanations).
+* **100% addressed:** Triages every finding (`ACCEPT`, `LINK`, or `WON'T DO`) and re-verifies edits until a pass produces zero new edits.
+
+#### `writing-for-agents`
+`Combined` · [Plugin README](./plugins/writing-for-agents/README.md)
+
+Reference for writing and trimming plugin instruction & config files (`SKILL.md`, `AGENTS.md`, `plugin.json`, `hooks.json`).
+* **Prompt craft:** Concise file pointers, high-signal trigger words, positive phrasing, and pruning no-op instructions (rules the model already follows by default).
+* **Antigravity mechanics:** Exact manifest, frontmatter, root `hooks.json`, and `<800`-token rules.
+
+#### `session-handoff`
+`Adapted` · [Plugin README](./plugins/session-handoff/README.md)
+
+Compacts an active session into a concise Session Artifact (`handoff_<slug>.md`) for starting a fresh chat or switching AI model families (e.g., Gemini → fresh Claude chat).
+* **What it captures:** Live git state, absolute file pointers, settled decisions, ruled-out dead ends, and a copy-ready starter prompt to paste into the new chat.
+
+#### `bootstrap-approvals`
+`Original` · [Plugin README](./plugins/bootstrap-approvals/README.md)
+
+Primes Antigravity IDE's "Always Allow" cache for unsandboxed or IDE-prompted read commands (e.g., `gh` GitHub CLI, network probes, or workspaces running without auto-run sandboxing).
+* **One-pass priming:** Discovers safe read-only commands from the repo and runs each discrete top-level shell read one by one (required because the approval cache ignores commands hidden inside helper scripts) so you can click "Always Allow" once per safe prefix.
+* **Safety ban:** Strictly forbids mutating *"Spicy Prefixes"* like `git reset` or `rm`.
+
+#### `repo-bootstrap`
+`Original` · [Plugin README](./plugins/repo-bootstrap/README.md)
+
+Optional interactive Day-0 scaffolder (never required by other plugins).
+* **Opt-in scaffolding:** Checks local tool readiness and selectively initializes a `<800`-token `AGENTS.md`, a modular `Justfile` (Makefile-like task runner separating read-only *safe* vs. confirmation-*gated* mutating recipes), optional `CODING_STANDARDS.md`, `GLOSSARY.md`, `docs/adr/`, and automated governance test skeletons (placeholder checks for docs, schemas, and project invariants—rules that must always hold true).
+
+#### `prototype`
+`Adapted` · [Plugin README](./plugins/prototype/README.md)
+
+Builds throwaway demos to answer UX or logic questions fast before writing production code.
+* **Interactive output:** Single-file HTML logic demos or radically different toggleable UI variations rendered via Antigravity Artifacts or `generative_ui` (Antigravity's interactive HTML widget renderer).
+
+#### `wizard`
+`Adapted` · [Plugin README](./plugins/wizard/README.md)
+
+Generates safe, interactive bash runbooks walking humans step by step through tasks agents cannot perform (infra provisioning, CI secrets, third-party dashboards, production switchovers).
+* **Built-in hygiene:** Uses its bundled `template.sh` with silent `read -rs` secret prompts and `[y/N]` confirmation gates.
+
+---
 
 ### Architecture & Workflow Guides
 * **[Agentic Pair Programming Protocol](./docs/agentic-pair-programming-protocol.md)** — End-to-end walkthrough showing how the 8 core lifecycle skills, 2 always-on hook plugins, 10 situational skills, and native Antigravity slash commands chain together across a real feature.
@@ -229,7 +376,7 @@ Because `mattpocock/skills` targets Claude Code's conventions, every adapted or 
 
 1. Create `plugins/<plugin-name>/plugin.json` with a unique kebab-case `name`, concise `description`, `version`, and up to 3 `suggestedPrompts` (see [`plugins/writing-for-agents/skills/writing-for-agents/references/antigravity-mechanics.md`](./plugins/writing-for-agents/skills/writing-for-agents/references/antigravity-mechanics.md) for the exact allowed manifest keys and frontmatter rules, or copy an existing plugin folder as a template).
 2. Add only the files and subdirectories the plugin actually uses (`skills/<skill>/SKILL.md`, `agents/`, `rules/`, `hooks.json`, `mcp_config.json`) plus a plugin `README.md` (and, for hook plugins, a repo-root `tests/test_<plugin>.py` unittest suite).
-3. Add an entry to the **Plugin Catalog** table above (and update plugin counts plus [`docs/agentic-pair-programming-protocol.md`](./docs/agentic-pair-programming-protocol.md) and [`docs/upstream-adaptations-and-deviations.md`](./docs/upstream-adaptations-and-deviations.md) with its workflow placement and provenance).
+3. Add an entry to the **Plugin Catalog** section above (and update plugin counts plus [`docs/agentic-pair-programming-protocol.md`](./docs/agentic-pair-programming-protocol.md) and [`docs/upstream-adaptations-and-deviations.md`](./docs/upstream-adaptations-and-deviations.md) with its workflow placement and provenance).
 4. Run `just check` to verify Python governance checks, hook unit tests, and `agy plugin validate --strict`.
 
 ---
