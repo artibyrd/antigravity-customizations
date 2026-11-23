@@ -1,8 +1,8 @@
 {
   "name": "fresh-reader",
   "displayName": "Fresh Reader",
-  "version": "1.0.0",
-  "description": "Spawns a cold-start read-only subagent with zero prior session context to review documentation as a first-time reader, triages 100% of findings with discernment (Accept, Link, or Won't Do), and re-verifies edits until a pass yields zero new changes.",
+  "version": "1.1.0",
+  "description": "Audits documentation across four reader personas (vibe-coder, junior-engineer, senior-engineer, domain-expert) via a top-down cold-start cascade sieve, triaging 100% of findings with discernment until natural zero-edit convergence.",
   "author": {
     "name": "Arthur Davis",
     "url": "https://github.com/artibyrd"
@@ -13,8 +13,8 @@
     "url": "https://github.com/artibyrd/antigravity-customizations"
   },
   "suggestedPrompts": [
-    "Run a fresh-reader pass on README.md and docs/ as a first-time visitor",
-    "Review this documentation with fresh eyes and triage every finding before editing",
-    "Check whether this onboarding guide makes sense to someone with zero project context"
+    "Run fresh-reader on README.md and docs/ targeting junior-engineer via the top-down cascade",
+    "Audit this technical specification with fresh-reader at domain-expert rigor",
+    "Review this beginner onboarding guide with fresh-reader down to vibe-coder"
   ]
 }

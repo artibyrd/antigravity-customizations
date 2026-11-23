@@ -1,15 +1,16 @@
 ---
 name: tdd
 description: >-
-  Vertical-slice test-driven development at pre-agreed public seams with
-  hermetic offline testing boundaries. Use when the user wants to build
-  features or fix bugs test-first, mentions "TDD" or "red-green-refactor", or
-  asks for seam-based integration tests.
+  Two-phase vertical-slice test-driven development at pre-agreed public seams
+  with hermetic offline testing boundaries. Use during planning (/plan) to lock
+  in testable seams and vertical behavioral slices before coding or /teamwork
+  swarms, and during implementation to drive red-green-refactor cycles, fix bugs
+  test-first, or audit seam-based integration tests.
 ---
 
 # Test-Driven Development
 
-TDD is the **red → green** loop. This skill governs what makes every cycle produce tests worth keeping: observable behavior, pre-agreed seams, hermetic boundaries, anti-patterns to reject, and loop discipline. Apply every section before and during the loop—not after.
+TDD spans **two coordinated phases**—**seam & vertical-slice design during planning** and the **red → green loop during implementation**. This skill governs what makes every cycle produce tests worth keeping: observable behavior, pre-agreed seams, hermetic boundaries, anti-patterns to reject, and loop discipline. Apply every section *before* and *during* the loop—never bolted on after implementation.
 
 When exploring the codebase, read `GLOSSARY.md` (if present) so test names and interface vocabulary match the domain language, and respect any `docs/adr/` decisions in the area you touch; skip quietly if neither exists.
 
@@ -23,18 +24,20 @@ Read [references/tests.md](./references/tests.md) for concrete good/bad examples
 
 ---
 
-## 2. Seams: Where Tests Go
+## 2. Phase A — Planning-Time Seam & Vertical-Slice Design (With `/plan`)
 
 A **seam** is the public boundary where you observe behavior without reaching inside—callers and tests cross the same interface. Tests live at seams, never against private internals.
 
-**Test only at pre-agreed seams.** Before writing any test, list the proposed seams and confirm them with the user. Do not write tests against unconfirmed seams. Agreeing on seams up front focuses effort on critical paths and complex logic rather than low-value noise.
+**Lock seams and vertical slices during planning whenever creating an `implementation_plan.md`.** Doing this during Stage 2 (before coding or launching autonomous `/teamwork` swarm workers) prevents implementers from fighting a horizontal plan ("build all models → build all services → add tests at the end") and eliminates mid-swarm stalls waiting for human seam approval:
 
-For each proposed seam, include a one-line note on **what it catches** and **what it misses**, and ask: *"What is the public interface, and which seams should we test?"*
+1. **List candidate public seams** for the planned feature, with a one-line note on **what each catches** and **what it misses**, and confirm with the user: *"What is the public interface, and which seams should we test?"*
+2. **Check three interface invariants** before locking the plan:
+   - **Depth over pass-throughs:** A deep module hides complexity behind a small, caller-friendly interface; if a test has to reach past the interface to assert behavior, the seam is in the wrong place.
+   - **Real variance:** Introduce an adapter seam only when something genuinely varies across it (e.g., production gateway vs. in-memory fake), not for hypothetical future swaps.
+   - **Pure return values & injected dependencies:** Accept external dependencies as parameters and return explicit results instead of mutating hidden state.
+3. **Structure the plan as vertical behavioral slices:** Record the agreed seam(s) and ordered vertical tracer-bullet behaviors (thin end-to-end slices: one failing test → minimal code → next behavior) directly in `implementation_plan.md`.
 
-When the interface shape itself is unclear, check three design invariants before writing the first test:
-- **Depth over pass-throughs:** A deep module hides complexity behind a small, caller-friendly interface; if a test has to reach past the interface to assert behavior, the seam is in the wrong place.
-- **Real variance:** Introduce an adapter seam only when something genuinely varies across it (e.g., production gateway vs. in-memory fake), not for hypothetical future swaps.
-- **Pure return values & injected dependencies:** Accept external dependencies as parameters and return explicit results instead of mutating hidden state.
+*(Ad-hoc / planless fallback: When fixing a quick bug or building a small change without a formal plan, run this seam-agreement step inline before writing the first test—never write tests against unconfirmed seams.)*
 
 ---
 
@@ -56,8 +59,9 @@ Keep unit and seam tests **fast, deterministic, and offline**:
 
 ---
 
-## 5. Rules of the Loop
+## 5. Phase B — Execution-Time Rules of the Loop
 
+- **Start from pre-agreed seams:** If `implementation_plan.md` already pins the approved seams and vertical slices from Phase A, confirm them briefly and enter red → green immediately (including inside `/teamwork` workers). If no seams were agreed during planning, complete Phase A with the user before writing the first test.
 - **Red before green:** Write one failing test first, run it to observe the expected failure, then write only enough production code to make it pass. Do not anticipate future tests or add speculative abstractions.
 - **One slice at a time:** One agreed seam, one behavior, one minimal implementation per cycle.
 - **Keep refactoring in the review stage:** Do not interleave speculative refactors into the red → green cycle—address structural cleanup during the dedicated review stage once behavior is locked green.

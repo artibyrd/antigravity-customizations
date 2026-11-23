@@ -1,8 +1,8 @@
 {
   "name": "tdd",
   "displayName": "Test-Driven Development",
-  "version": "1.0.0",
-  "description": "Vertical-slice red-green-refactor TDD at pre-agreed public seams with hermetic offline testing boundaries. Prevents implementation-coupled mocks, tautological assertions, and horizontal test slicing.",
+  "version": "1.1.0",
+  "description": "Two-phase vertical-slice TDD: locks public seams and vertical test-first slices during planning, then drives red-green-refactor execution with hermetic offline testing boundaries. Prevents implementation-coupled mocks, tautological assertions, and horizontal test slicing.",
   "author": {
     "name": "Arthur Davis",
     "url": "https://github.com/artibyrd"
@@ -13,8 +13,8 @@
     "url": "https://github.com/artibyrd/antigravity-customizations"
   },
   "suggestedPrompts": [
-    "Build this feature using vertical-slice TDD—propose the seams to test first",
-    "Fix this bug test-first at the real public seam with a hermetic regression test",
+    "Design the public test seams and vertical TDD slices for this implementation plan",
+    "Implement this milestone using vertical-slice TDD against the planned seams",
     "Audit these tests for implementation-coupled mocks or tautological assertions"
   ]
 }
