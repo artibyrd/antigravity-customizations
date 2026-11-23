@@ -27,10 +27,26 @@ _SEV_ALLOW = 0
 _SEV_FORCE_ASK = 1
 _SEV_DENY = 2
 
+_MAX_RECURSION_DEPTH = 5
+
 _ALLOW_RESULT: dict[str, str] = {"decision": "allow"}
 
 _ENV_ASSIGN_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
 _PATHSPEC_MAGIC_RE = re.compile(r"^:\(([^)]*)\)(.*)$")
+_GIT_TOKEN_RE = re.compile(r"\bgit(?:\.exe)?\b", re.IGNORECASE)
+_PRINTF_SPEC_RE = re.compile(r"%([-+# 0']*\d*(?:\.\d*)?)([%sbcdiouxXfeEgGaA])")
+
+
+class _ParsedCommand:
+    """A single simple shell command with its attached stdin heredocs/here-strings."""
+
+    __slots__ = ("tokens", "heredocs", "here_strings", "piped_to_next")
+
+    def __init__(self) -> None:
+        self.tokens: list[str] = []
+        self.heredocs: list[str] = []
+        self.here_strings: list[str] = []
+        self.piped_to_next: bool = False
 
 _SHELL_KEYWORDS = {
     "if",
@@ -345,21 +361,22 @@ def _extract_heredoc_substitutions(body: str) -> list[str]:
     return subs
 
 
-def _lex_shell(text: str) -> tuple[list[list[str]], list[str]]:
+def _lex_shell(text: str) -> tuple[list[_ParsedCommand], list[str]]:
     """Lex a POSIX/bash command line into simple commands and embedded substitutions.
 
     Preserves quoting semantics so strings inside single/double quotes or quoted
     heredocs are not misparsed as separate commands, while still extracting
-    executable command/process substitutions ($(...), `...`, <(...), >(...)).
+    executable command/process substitutions ($(...), `...`, <(...), >(...))
+    and attaching heredoc/here-string bodies to their owning command.
     """
-    commands: list[list[str]] = []
+    commands: list[_ParsedCommand] = []
     substitutions: list[str] = []
-    current_cmd: list[str] = []
+    current_cmd = _ParsedCommand()
     buf: list[str] = []
     in_word = False
     word_quoted = False
     expect_redir_target: str | None = None
-    pending_heredocs: list[tuple[str, bool, bool]] = []
+    pending_heredocs: list[tuple[_ParsedCommand, str, bool, bool]] = []
 
     def flush_word() -> None:
         nonlocal in_word, word_quoted, expect_redir_target
@@ -374,21 +391,26 @@ def _lex_shell(text: str) -> tuple[list[list[str]], list[str]]:
             kind = expect_redir_target
             expect_redir_target = None
             if kind in ("heredoc", "heredoc_strip"):
-                pending_heredocs.append((word, kind == "heredoc_strip", not was_quoted))
+                pending_heredocs.append(
+                    (current_cmd, word, kind == "heredoc_strip", not was_quoted)
+                )
+            elif kind == "here_string":
+                current_cmd.here_strings.append(word)
         else:
-            current_cmd.append(word)
+            current_cmd.tokens.append(word)
 
-    def flush_cmd() -> None:
+    def flush_cmd(*, piped: bool = False) -> None:
         nonlocal current_cmd, expect_redir_target
         flush_word()
         expect_redir_target = None
-        if current_cmd:
+        if current_cmd.tokens or current_cmd.heredocs or current_cmd.here_strings:
+            current_cmd.piped_to_next = piped
             commands.append(current_cmd)
-            current_cmd = []
+            current_cmd = _ParsedCommand()
 
     def consume_heredocs(pos: int) -> int:
         n_text = len(text)
-        for delim, strip_tabs, expand in pending_heredocs:
+        for target_cmd, delim, strip_tabs, expand in pending_heredocs:
             body_lines: list[str] = []
             while pos < n_text:
                 nl = text.find("\n", pos)
@@ -404,10 +426,10 @@ def _lex_shell(text: str) -> tuple[list[list[str]], list[str]]:
                 if check == delim:
                     break
                 body_lines.append(line)
-            if expand and body_lines:
-                substitutions.extend(
-                    _extract_heredoc_substitutions("\n".join(body_lines))
-                )
+            body = "\n".join(body_lines)
+            target_cmd.heredocs.append(body)
+            if expand and body:
+                substitutions.extend(_extract_heredoc_substitutions(body))
         pending_heredocs.clear()
         return pos
 
@@ -456,11 +478,19 @@ def _lex_shell(text: str) -> tuple[list[list[str]], list[str]]:
             flush_cmd()
             i += 3
             continue
-        if text[i : i + 2] in ("&&", "||", "|&", ";;", ";&"):
+        if text[i : i + 2] == "|&":
+            flush_cmd(piped=True)
+            i += 2
+            continue
+        if text[i : i + 2] in ("&&", "||", ";;", ";&"):
             flush_cmd()
             i += 2
             continue
-        if ch in (";", "|", "&", "(", ")"):
+        if ch == "|":
+            flush_cmd(piped=True)
+            i += 1
+            continue
+        if ch in (";", "&", "(", ")"):
             flush_cmd()
             i += 1
             continue
@@ -476,7 +506,7 @@ def _lex_shell(text: str) -> tuple[list[list[str]], list[str]]:
                 expect_redir_target = "heredoc_strip"
                 i += 3
             elif text[i : i + 3] == "<<<":
-                expect_redir_target = "normal"
+                expect_redir_target = "here_string"
                 i += 3
             elif text[i : i + 2] == "<<":
                 expect_redir_target = "heredoc"
@@ -671,6 +701,18 @@ def _check_git_push(args: list[str]) -> tuple[int, dict[str, str]]:
                         "Blocked by git-guardrails: force-pushing with '--force-if-includes' "
                         "rewrites remote history. Push without force or ask the user to "
                         "run it manually."
+                    ),
+                },
+            )
+        if arg == "--mirror":
+            return (
+                _SEV_DENY,
+                {
+                    "decision": "deny",
+                    "reason": (
+                        "Blocked by git-guardrails: 'git push --mirror' force-overwrites "
+                        "and deletes remote refs. Push specific refs without '--mirror' "
+                        "or ask the user to run it manually."
                     ),
                 },
             )
@@ -1046,9 +1088,59 @@ _GIT_SUBCOMMAND_RULES = {
 }
 
 
-def _evaluate_git_tokens(tokens: list[str], depth: int) -> tuple[int, dict[str, str]]:
+def _depth_limit_fallback(raw: str) -> tuple[int, dict[str, str]]:
+    """Fail-safe when command nesting exceeds ``_MAX_RECURSION_DEPTH``."""
+    stripped = re.sub(r"[\"'\\]", "", raw)
+    if _GIT_TOKEN_RE.search(raw) or _GIT_TOKEN_RE.search(stripped):
+        return (
+            _SEV_FORCE_ASK,
+            {
+                "decision": "force_ask",
+                "reason": (
+                    "git-guardrails: command nesting exceeded maximum inspection "
+                    "depth and references git; explicit user confirmation required."
+                ),
+            },
+        )
+    return _SEV_ALLOW, _ALLOW_RESULT
+
+
+def _check_git_submodule(args: list[str], depth: int) -> tuple[int, dict[str, str]]:
+    """Evaluate `git submodule [--quiet] foreach [--recursive] <command>`."""
+    i = 0
+    n = len(args)
+    while i < n and args[i] in ("-q", "--quiet", "--cached"):
+        i += 1
+    if i >= n or args[i] != "foreach":
+        return _SEV_ALLOW, _ALLOW_RESULT
+    i += 1
+    while i < n:
+        tok = args[i]
+        if tok == "--":
+            i += 1
+            break
+        if tok.startswith("-"):
+            i += 1
+            continue
+        break
+    rest = args[i:]
+    if not rest:
+        return _SEV_ALLOW, _ALLOW_RESULT
+    if len(rest) == 1:
+        return _evaluate_script(rest[0], depth + 1)
+    return _evaluate_command_tokens(rest, depth + 1)
+
+
+def _evaluate_git_tokens(
+    tokens: list[str],
+    depth: int,
+    inherited_aliases: dict[str, str] | None = None,
+) -> tuple[int, dict[str, str]]:
     """Parse git global options and dispatch to the matching subcommand rule."""
-    aliases: dict[str, str] = {}
+    if depth > _MAX_RECURSION_DEPTH:
+        return _depth_limit_fallback(" ".join(tokens))
+
+    aliases: dict[str, str] = dict(inherited_aliases) if inherited_aliases else {}
     i = 1
     n = len(tokens)
     subcommand: str | None = None
@@ -1089,18 +1181,28 @@ def _evaluate_git_tokens(tokens: list[str], depth: int) -> tuple[int, dict[str, 
         return _SEV_ALLOW, _ALLOW_RESULT
 
     # Handle inline `git -c alias.<name>=<def> <name>` invocations.
-    if subcommand in aliases and depth < 5:
+    if subcommand in aliases:
         alias_val = aliases[subcommand].strip()
+        if depth >= _MAX_RECURSION_DEPTH:
+            return _depth_limit_fallback(f"git {alias_val} {' '.join(sub_args)}")
         if alias_val.startswith("!"):
             return _evaluate_script(alias_val[1:], depth + 1)
         alias_cmds, alias_subs = _lex_shell(alias_val)
         best = (_SEV_ALLOW, _ALLOW_RESULT)
         for sub in alias_subs:
             best = _pick_stricter(best, _evaluate_script(sub, depth + 1))
-        if alias_cmds:
-            expanded = ["git", *alias_cmds[0], *sub_args]
-            best = _pick_stricter(best, _evaluate_git_tokens(expanded, depth + 1))
+            if best[0] == _SEV_DENY:
+                return best
+        if alias_cmds and alias_cmds[0].tokens:
+            expanded = ["git", *alias_cmds[0].tokens, *sub_args]
+            best = _pick_stricter(
+                best,
+                _evaluate_git_tokens(expanded, depth + 1, inherited_aliases=aliases),
+            )
         return best
+
+    if subcommand == "submodule":
+        return _check_git_submodule(sub_args, depth)
 
     checker = _GIT_SUBCOMMAND_RULES.get(subcommand)
     if checker is None:
@@ -1116,10 +1218,11 @@ def _pick_stricter(
     return candidate if candidate[0] > current[0] else current
 
 
-def _extract_shell_c_script(args: list[str]) -> str | None:
-    """Extract the command_string operand from `sh/bash/zsh ... -c <script>`."""
+def _parse_shell_invocation(args: list[str]) -> tuple[str | None, bool]:
+    """Inspect shell CLI args and return ``(c_script, reads_stdin)``."""
     long_value_opts = {"--rcfile", "--init-file"}
     saw_c = False
+    saw_s = False
     i = 0
     n = len(args)
 
@@ -1142,6 +1245,8 @@ def _extract_shell_c_script(args: list[str]) -> str | None:
             for idx, ch in enumerate(arg[1:]):
                 if ch == "c" and arg.startswith("-"):
                     saw_c = True
+                elif ch == "s" and arg.startswith("-"):
+                    saw_s = True
                 elif ch in ("o", "O"):
                     if idx == len(arg) - 2:
                         consumed_next = True
@@ -1150,9 +1255,119 @@ def _extract_shell_c_script(args: list[str]) -> str | None:
             continue
         break
 
-    if saw_c and i < n:
-        return args[i]
-    return None
+    if saw_c:
+        return (args[i] if i < n else None), False
+    if saw_s or i >= n or args[i] == "-":
+        return None, True
+    return None, False
+
+
+def _decode_printf_escapes(text: str) -> str:
+    """Decode common backslash escapes used by ``echo -e`` and ``printf``."""
+    simple = {
+        "a": "\a",
+        "b": "\b",
+        "e": "\x1b",
+        "f": "\f",
+        "n": "\n",
+        "r": "\r",
+        "t": "\t",
+        "v": "\v",
+        "\\": "\\",
+    }
+    out: list[str] = []
+    i = 0
+    n = len(text)
+    while i < n:
+        ch = text[i]
+        if ch != "\\" or i + 1 >= n:
+            out.append(ch)
+            i += 1
+            continue
+        nxt = text[i + 1]
+        if nxt == "c":
+            break
+        if nxt in simple:
+            out.append(simple[nxt])
+            i += 2
+        elif nxt == "x":
+            m = re.match(r"[0-9A-Fa-f]{1,2}", text[i + 2 :])
+            if m:
+                out.append(chr(int(m.group(0), 16)))
+                i += 2 + len(m.group(0))
+            else:
+                out.append("\\x")
+                i += 2
+        elif nxt in "01234567":
+            start = i + 2 if nxt == "0" else i + 1
+            m = re.match(r"[0-7]{1,3}", text[start:])
+            if m:
+                out.append(chr(int(m.group(0), 8) & 0xFF))
+                i = start + len(m.group(0))
+            else:
+                out.append("\x00" if nxt == "0" else nxt)
+                i += 2
+        else:
+            out.append("\\" + nxt)
+            i += 2
+    return "".join(out)
+
+
+def _extract_echo_payload(args: list[str]) -> str:
+    """Reconstruct the stdout text emitted by a shell ``echo`` command."""
+    interpret_escapes = False
+    i = 0
+    while i < len(args):
+        tok = args[i]
+        if len(tok) > 1 and tok.startswith("-") and set(tok[1:]) <= {"n", "e", "E"}:
+            for ch in tok[1:]:
+                if ch == "e":
+                    interpret_escapes = True
+                elif ch == "E":
+                    interpret_escapes = False
+            i += 1
+        else:
+            break
+    joined = " ".join(args[i:])
+    return _decode_printf_escapes(joined) if interpret_escapes else joined
+
+
+def _extract_printf_payload(args: list[str]) -> str:
+    """Reconstruct the approximate stdout emitted by a shell ``printf`` command."""
+    i = 0
+    if i < len(args) and args[i] == "--":
+        i += 1
+    if i >= len(args):
+        return ""
+    fmt = args[i]
+    vals = args[i + 1 :]
+    if not vals:
+        return _decode_printf_escapes(fmt)
+
+    out_chunks: list[str] = []
+    val_idx = 0
+    max_rounds = min(len(vals) + 1, 64)
+    for _ in range(max_rounds):
+        consumed_any = False
+        pos = 0
+        for m in _PRINTF_SPEC_RE.finditer(fmt):
+            out_chunks.append(_decode_printf_escapes(fmt[pos : m.start()]))
+            spec = m.group(2)
+            if spec == "%":
+                out_chunks.append("%")
+            else:
+                consumed_any = True
+                val = vals[val_idx] if val_idx < len(vals) else ""
+                val_idx += 1
+                if spec == "b":
+                    out_chunks.append(_decode_printf_escapes(val))
+                else:
+                    out_chunks.append(val)
+            pos = m.end()
+        out_chunks.append(_decode_printf_escapes(fmt[pos:]))
+        if not consumed_any or val_idx >= len(vals):
+            break
+    return "".join(out_chunks)
 
 
 _WRAPPER_SPECS: dict[str, tuple[set[str], bool, int]] = {
@@ -1207,7 +1422,7 @@ def _skip_wrapper_opts(
     return i
 
 
-def _unwrap_prefix(tokens: list[str], depth: int) -> tuple[list[str], list[str]]:
+def _unwrap_prefix(tokens: list[str]) -> tuple[list[str], list[str]]:
     """Strip shell keywords, env assignments, and transparent wrapper commands.
 
     Returns ``(remaining_tokens, extra_scripts_to_eval)``.
@@ -1270,7 +1485,7 @@ def _unwrap_prefix(tokens: list[str], depth: int) -> tuple[list[str], list[str]]
                     i += 1
                     continue
                 break
-            if split_str is not None and depth < 5:
+            if split_str is not None:
                 tail = " ".join(cur[i:])
                 extra_scripts.append(f"{split_str} {tail}".strip())
                 return [], extra_scripts
@@ -1290,11 +1505,23 @@ def _unwrap_prefix(tokens: list[str], depth: int) -> tuple[list[str], list[str]]
 
 
 def _evaluate_command_tokens(
-    tokens: list[str], depth: int
+    tokens: list[str],
+    depth: int,
+    *,
+    heredocs: list[str] | None = None,
+    here_strings: list[str] | None = None,
 ) -> tuple[int, dict[str, str]]:
-    """Evaluate a single parsed shell command argv."""
+    """Evaluate a single parsed shell command argv and any attached stdin scripts."""
+    if depth > _MAX_RECURSION_DEPTH:
+        combined = " ".join(tokens)
+        if heredocs:
+            combined += "\n" + "\n".join(heredocs)
+        if here_strings:
+            combined += "\n" + "\n".join(here_strings)
+        return _depth_limit_fallback(combined)
+
     best = (_SEV_ALLOW, _ALLOW_RESULT)
-    cur, extra_scripts = _unwrap_prefix(tokens, depth)
+    cur, extra_scripts = _unwrap_prefix(tokens)
 
     for script in extra_scripts:
         best = _pick_stricter(best, _evaluate_script(script, depth + 1))
@@ -1309,9 +1536,6 @@ def _evaluate_command_tokens(
     if base in ("git", "git.exe"):
         return _pick_stricter(best, _evaluate_git_tokens(cur, depth))
 
-    if depth >= 5:
-        return best
-
     if base == "eval":
         eval_args = cur[1:]
         if eval_args and eval_args[0] == "--":
@@ -1323,9 +1547,18 @@ def _evaluate_command_tokens(
         return best
 
     if base in _SHELL_BINARIES:
-        script = _extract_shell_c_script(cur[1:])
-        if script is not None:
-            best = _pick_stricter(best, _evaluate_script(script, depth + 1))
+        c_script, reads_stdin = _parse_shell_invocation(cur[1:])
+        if c_script is not None:
+            best = _pick_stricter(best, _evaluate_script(c_script, depth + 1))
+        elif reads_stdin:
+            for body in (heredocs or ()):
+                best = _pick_stricter(best, _evaluate_script(body, depth + 1))
+                if best[0] == _SEV_DENY:
+                    return best
+            for hs in (here_strings or ()):
+                best = _pick_stricter(best, _evaluate_script(hs, depth + 1))
+                if best[0] == _SEV_DENY:
+                    return best
         return best
 
     if base == "find":
@@ -1350,64 +1583,160 @@ def _evaluate_command_tokens(
     return best
 
 
-def _evaluate_script(command_line: str, depth: int = 0) -> tuple[int, dict[str, str]]:
-    """Lex and evaluate all commands and embedded substitutions in a shell string."""
-    if not command_line or not command_line.strip():
-        return _SEV_ALLOW, _ALLOW_RESULT
+def _is_passthrough_stage(cmd: _ParsedCommand) -> bool:
+    """Return True if a pipeline stage passes stdin straight through unmodified."""
+    if cmd.heredocs or cmd.here_strings:
+        return False
+    cur, extra = _unwrap_prefix(cmd.tokens)
+    if extra or not cur:
+        return False
+    base = _basename_lower(cur[0])
+    if base == "tee":
+        return True
+    if base == "cat":
+        # Bare `cat` (flags and optional '-' only, no file operands).
+        return all(arg == "-" or arg.startswith("-") for arg in cur[1:])
+    return False
 
-    commands, substitutions = _lex_shell(command_line)
+
+def _evaluate_pipeline_shell_feeds(
+    commands: list[_ParsedCommand], depth: int
+) -> tuple[int, dict[str, str]]:
+    """Inspect `echo`/`printf`/`cat <<EOF` pipelines feeding into a shell."""
     best = (_SEV_ALLOW, _ALLOW_RESULT)
+    n = len(commands)
+    i = 0
 
-    for cmd_tokens in commands:
-        best = _pick_stricter(best, _evaluate_command_tokens(cmd_tokens, depth))
-        if best[0] == _SEV_DENY:
-            return best
+    while i < n:
+        start = i
+        while i < n - 1 and commands[i].piped_to_next:
+            i += 1
+        end = i
+        i += 1
 
-    if depth < 5:
-        for sub in substitutions:
-            best = _pick_stricter(best, _evaluate_script(sub, depth + 1))
-            if best[0] == _SEV_DENY:
-                return best
+        if end <= start:
+            continue
+
+        pipeline = commands[start : end + 1]
+        for j in range(1, len(pipeline)):
+            consumer_cur, _ = _unwrap_prefix(pipeline[j].tokens)
+            if not consumer_cur:
+                continue
+            if _basename_lower(consumer_cur[0]) not in _SHELL_BINARIES:
+                continue
+            _, reads_stdin = _parse_shell_invocation(consumer_cur[1:])
+            if not reads_stdin:
+                continue
+
+            # Walk backward across transparent stdin pass-through stages (cat/tee).
+            k = j - 1
+            while k > 0 and _is_passthrough_stage(pipeline[k]):
+                k -= 1
+            producer = pipeline[k]
+            prod_cur, _ = _unwrap_prefix(producer.tokens)
+            if not prod_cur:
+                continue
+            prod_base = _basename_lower(prod_cur[0])
+
+            payloads: list[str] = []
+            if prod_base == "echo":
+                payloads.append(_extract_echo_payload(prod_cur[1:]))
+            elif prod_base == "printf":
+                payloads.append(_extract_printf_payload(prod_cur[1:]))
+            elif prod_base == "cat":
+                payloads.extend(producer.heredocs)
+                payloads.extend(producer.here_strings)
+
+            for payload in payloads:
+                if payload.strip():
+                    best = _pick_stricter(best, _evaluate_script(payload, depth + 1))
+                    if best[0] == _SEV_DENY:
+                        return best
 
     return best
 
 
-def evaluate_command(command_line: str) -> dict[str, str]:
+def _evaluate_script(command_line: str, depth: int = 0) -> tuple[int, dict[str, str]]:
+    """Lex and evaluate all commands, pipelines, and substitutions in a shell string."""
+    if not command_line or not command_line.strip():
+        return _SEV_ALLOW, _ALLOW_RESULT
+    if depth > _MAX_RECURSION_DEPTH:
+        return _depth_limit_fallback(command_line)
+
+    commands, substitutions = _lex_shell(command_line)
+    best = (_SEV_ALLOW, _ALLOW_RESULT)
+
+    for cmd in commands:
+        best = _pick_stricter(
+            best,
+            _evaluate_command_tokens(
+                cmd.tokens,
+                depth,
+                heredocs=cmd.heredocs,
+                here_strings=cmd.here_strings,
+            ),
+        )
+        if best[0] == _SEV_DENY:
+            return best
+
+    best = _pick_stricter(best, _evaluate_pipeline_shell_feeds(commands, depth))
+    if best[0] == _SEV_DENY:
+        return best
+
+    for sub in substitutions:
+        best = _pick_stricter(best, _evaluate_script(sub, depth + 1))
+        if best[0] == _SEV_DENY:
+            return best
+
+    return best
+
+
+def pass_through_response(args: dict[str, object] | None = None) -> dict[str, str]:
+    """Return the hook decision for non-matching commands and fail-open fallbacks."""
+    _ = args
+    return dict(_ALLOW_RESULT)
+
+
+def evaluate_command(
+    command_line: str, args: dict[str, object] | None = None
+) -> dict[str, str]:
     """Return an Antigravity PreToolUse decision dict for ``command_line``."""
-    _, decision = _evaluate_script(command_line, depth=0)
+    severity, decision = _evaluate_script(command_line, depth=0)
+    if severity == _SEV_ALLOW:
+        return pass_through_response(args)
     return decision
 
 
 def handle_payload(raw_input: str) -> dict[str, str]:
     """Parse an Antigravity PreToolUse JSON payload and return a decision dict.
 
-    Fails open (``{"decision": "allow"}``) on malformed or non-object JSON.
+    Fails open via ``pass_through_response()`` on malformed or non-object JSON.
     """
     try:
         payload = json.loads(raw_input)
     except Exception:
-        return dict(_ALLOW_RESULT)
+        return pass_through_response()
 
     if not isinstance(payload, dict):
-        return dict(_ALLOW_RESULT)
+        return pass_through_response()
 
     tool_call = payload.get("toolCall")
     if not isinstance(tool_call, dict):
-        return dict(_ALLOW_RESULT)
+        return pass_through_response()
 
     tool_name = tool_call.get("name", "")
     if isinstance(tool_name, str) and tool_name and tool_name != "run_command":
-        return dict(_ALLOW_RESULT)
+        return pass_through_response()
 
     args = tool_call.get("args")
     if not isinstance(args, dict):
-        return dict(_ALLOW_RESULT)
+        return pass_through_response()
 
     command_line = args.get("CommandLine")
     if not isinstance(command_line, str):
-        return dict(_ALLOW_RESULT)
+        return pass_through_response(args)
 
-    return evaluate_command(command_line)
+    return evaluate_command(command_line, args)
 
 
 def main() -> int:

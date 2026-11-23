@@ -163,6 +163,9 @@ class TestDenyDestructiveGit(unittest.TestCase):
                 "git push --force-with-lease=refs/heads/main:abc123 origin main",
                 "git push origin main --force-with-lease",
                 "git push --force-if-includes origin main",
+                "git push --mirror",
+                "git push --mirror origin",
+                "git push origin --mirror",
                 "git push origin +main",
                 "git push origin +HEAD:main",
                 "git push origin main +dev",
@@ -331,6 +334,7 @@ class TestGlobalFlagsWrappersAndCompoundShell(unittest.TestCase):
             "git --no-optional-locks --no-advice clean -df",
             "git --exec-path=/usr/lib/git-core push -f",
             "git -c alias.fp='push --force' fp origin main",
+            "git -c alias.a=b -c alias.b='push --force' a origin main",
             "git -c alias.boom='!git reset --hard' boom",
             "/usr/bin/git push --force",
             "/usr/local/bin/git reset --hard",
@@ -405,6 +409,31 @@ class TestGlobalFlagsWrappersAndCompoundShell(unittest.TestCase):
             'zsh -c "git restore --worktree ."',
             'eval "git reset --hard"',
             "eval git push -f",
+            # Heredoc & here-string into shells
+            "bash <<'EOF'\ngit reset --hard\nEOF",
+            "sh -e <<EOF\ngit push --force\nEOF",
+            "zsh -s arg1 <<'EOF'\ngit clean -fd\nEOF",
+            "sudo bash <<'EOF'\ngit branch -D foo\nEOF",
+            "bash <<< 'git reset --hard'",
+            "sh <<< 'git checkout -- .'",
+            # Pipelines feeding commands into shells
+            "echo 'git reset --hard' | sh",
+            "echo -e 'git status\\ngit push --force' | bash",
+            "printf '%s\\n' 'git reset --hard' | sh",
+            "printf 'git %s --hard\\n' reset | bash",
+            "printf 'git clean -fd\\n' | dash",
+            "printf '%s\\n' 'git status' 'git branch -D old' | zsh",
+            "cat <<'EOF' | sh\ngit reset --hard\nEOF",
+            "cat <<< 'git push --force' | bash",
+            "echo 'git reset --hard' | cat | sh",
+            "echo 'git reset --hard' | tee /tmp/out.sh | bash",
+            "echo 'git push -f' | sudo sh -e",
+            # git submodule foreach
+            "git submodule foreach git reset --hard",
+            "git submodule foreach --recursive 'git clean -fd'",
+            "git submodule --quiet foreach --recursive 'git status && git push --force'",
+            "git submodule foreach -- git branch -D old",
+            "git submodule foreach sh -c 'git restore .'",
         ]
         for cmd in deny_cases:
             with self.subTest(cmd=cmd):
@@ -416,12 +445,43 @@ class TestGlobalFlagsWrappersAndCompoundShell(unittest.TestCase):
             "timeout 30 git push origin main",
             'bash -euo pipefail -c "git push origin main"',
             "cat <(git push origin main)",
+            "bash <<'EOF'\ngit push origin main\nEOF",
+            "echo 'git push origin main' | sh",
+            "printf '%s\\n' 'git push origin main' | bash",
+            "git submodule foreach git push origin main",
+            "git submodule foreach 'git push origin main'",
         ]
         for cmd in force_ask_cases:
             with self.subTest(cmd=cmd):
                 self.assertEqual(
                     guard_git.evaluate_command(cmd)["decision"], "force_ask"
                 )
+
+    def test_depth_limit_fails_safe_for_git_and_allows_non_git(self) -> None:
+        deep_git_cases = [
+            "echo $($($($($($(git reset --hard))))))",
+            "eval eval eval eval eval eval git reset --hard",
+            "sh -c 'eval eval eval eval eval git reset --hard'",
+            "eval eval eval eval eval eval \"g''it push --force\"",
+            "git -c alias.a=b -c alias.b=a a",
+        ]
+        for cmd in deep_git_cases:
+            with self.subTest(cmd=cmd):
+                res = guard_git.evaluate_command(cmd)
+                self.assertIn(
+                    res["decision"],
+                    ("force_ask", "deny"),
+                    f"Depth cap must not fail open on git command: {cmd}",
+                )
+                self.assertTrue(res.get("reason", "").strip())
+
+        deep_non_git_cases = [
+            "echo $($($($($($(echo ok))))))",
+            "eval eval eval eval eval eval echo ok",
+        ]
+        for cmd in deep_non_git_cases:
+            with self.subTest(cmd=cmd):
+                self.assertEqual(guard_git.evaluate_command(cmd)["decision"], "allow")
 
     def test_deny_outranks_force_ask_in_compound_commands(self) -> None:
         for cmd in [
@@ -515,6 +575,14 @@ class TestAllowAndFalsePositiveResistance(unittest.TestCase):
                 'git log --grep="git reset --hard"',
                 "git status # do not run git reset --hard",
                 "sh -c \"echo 'git reset --hard'\"",
+                "bash <<'EOF'\necho 'git reset --hard'\nEOF",
+                "echo \"echo 'git reset --hard'\" | sh",
+                "printf '%s\\n' \"echo 'git reset --hard'\" | bash",
+                "echo 'git reset --hard' | grep reset",
+                "echo 'git reset --hard' | sh ./scripts/log.sh",
+                "git submodule update --init --recursive",
+                "git submodule foreach git status",
+                'git submodule foreach git commit -m "prevent git reset --hard"',
                 "command -v git",
                 "ls -la",
                 "python3 -m unittest discover -s tests -v",

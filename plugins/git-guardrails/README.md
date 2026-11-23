@@ -6,7 +6,7 @@ An Antigravity `PreToolUse` lifecycle hook plugin that intercepts `run_command` 
 
 | Decision | Git Commands Covered | Why |
 | :--- | :--- | :--- |
-| **`deny`** *(hard block)* | **Force pushes:** `git push` with `--force`, `-f` (or combined short flags like `-uf`), `--force-with-lease`, `--force-if-includes`, or a `+` refspec prefix (`+main`, `+HEAD:main`) | Rewrites or overwrites remote branch history. |
+| **`deny`** *(hard block)* | **Force pushes:** `git push` with `--force`, `-f` (or combined short flags like `-uf`), `--force-with-lease`, `--force-if-includes`, `--mirror`, or a `+` refspec prefix (`+main`, `+HEAD:main`) | Rewrites, overwrites, or mirror-deletes remote branch history. |
 | **`deny`** *(hard block)* | **`git reset --hard`** (any flag order or ref) | Permanently discards uncommitted working-tree and index changes. |
 | **`deny`** *(hard block)* | **`git clean`** with `-f` / `--force` (including combined short flags such as `-fd`, `-fx`, `-df`, `-xf`, `-d -f`) | Permanently deletes untracked files and directories. |
 | **`deny`** *(hard block)* | **`git branch -D`**, `git branch --delete --force`, `git branch -d -f` / `-df` / `-fd` | Force-deletes branches that may contain unmerged commits. |
@@ -19,8 +19,8 @@ An Antigravity `PreToolUse` lifecycle hook plugin that intercepts `run_command` 
 
 [`hooks/guard_git.py`](./hooks/guard_git.py) uses a zero-dependency POSIX/bash lexer and git argument parser rather than naive regex matching:
 
-- **Global git options:** Handles options before the subcommand (`git -C repo ...`, `git --git-dir=... ...`, `git --work-tree=... ...`, `git -c key=val ...`, `git --no-pager ...`, and inline `-c alias.<name>=...`).
-- **Compound commands & wrappers:** Inspects every command in `&&`, `||`, `;`, `|`, `&`, newlines, subshells, command/process substitutions (`$(...)`, `` `...` ``, `<(...)`), nested shells (`sh -c`, `bash -c`, `eval`), and wrappers (`env`, `sudo`, `command`, `exec`, `timeout`, `xargs`). When multiple commands appear together, the strictest decision wins (`deny` > `force_ask` > `allow`).
+- **Global git options & submodules:** Handles options before the subcommand (`git -C repo ...`, `git --git-dir=... ...`, `git --work-tree=... ...`, `git -c key=val ...`, `git --no-pager ...`, inline `-c alias.<name>=...`) and inspects `git submodule foreach` commands.
+- **Compound commands, pipes & wrappers:** Inspects every command in `&&`, `||`, `;`, `|`, `&`, newlines, subshells, command/process substitutions (`$(...)`, `` `...` ``, `<(...)`), nested shells (`sh -c`, `bash -c`, `eval`, heredocs/here-strings into shells like `bash <<'EOF'`, and `echo`/`printf`/`cat <<'EOF'` piped into a shell), and wrappers (`env`, `sudo`, `command`, `exec`, `timeout`, `xargs`). When multiple commands appear together, the strictest decision wins (`deny` > `force_ask` > `allow`), and excessive nesting containing `git` fails safe to `force_ask` rather than `allow`.
 - **False-positive protection:** Respects single quotes, double quotes, backslash escapes, comments, and quoted heredocs so commands like `git commit -m "prevent git reset --hard"` or `echo "git push --force"` are allowed without interference.
 
 ## Prerequisites
