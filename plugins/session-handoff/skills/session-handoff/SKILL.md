@@ -19,8 +19,8 @@ Compacts the current session into a crisp handoff brief so a fresh agent—wheth
 
 Before writing, capture ground-truth workspace state with quick read-only checks (gracefully skipping git commands if the workspace is not a git repository):
 
-1. **Git state:** `git branch --show-current`, `git rev-parse --short HEAD`, and `git status -s` (note uncommitted or untracked changes clearly).
-2. **Active artifacts & pointers:** Identify exact paths for active `implementation_plan.md`, `walkthrough.md`, specs, ADRs (`docs/adr/`), PRs/issues, and key modified files.
+1. **Git state:** `git rev-parse --abbrev-ref HEAD`, `git rev-parse --short HEAD`, and `git status -s` (note uncommitted or untracked changes clearly; avoid `git branch` so preflight never prompts for a prefix that also matches `git branch -D`).
+2. **Active artifacts & pointers:** Identify exact paths for active `implementation_plan.md`, `walkthrough.md`, specs, ADRs (`docs/adr/`), PRs/issues, and key modified files. Use **absolute paths** for any files in the Antigravity artifact directory (or outside the workspace), because a fresh Claude or other-model session does not share Antigravity's artifact directory.
 3. **Next-session focus:** If the user stated what the next session is for (e.g., *"Claude will run the security audit"* or *"continue Phase 2 implementation"*), tailor every section toward that focus and drop unrelated history.
 
 ---
@@ -50,10 +50,12 @@ Keep the entire document tight and scannable (typically 40–100 lines):
 
 ## Sparse Context Pointers
 
+*(Use **absolute paths** for any artifact-directory or out-of-workspace files so a fresh Claude or cross-model session can open them directly; workspace-relative paths are fine for repo files when opening the same repo.)*
+
 | Artifact / File | Why It Matters |
 | :--- | :--- |
-| `<path/to/implementation_plan.md>` | Active plan; start at Milestone/Phase X |
-| `<path/to/file.py#L40-L95>` | Core seam touched in this session |
+| `<absolute-path-to-artifact-dir>/implementation_plan.md` | Active plan; start at Milestone/Phase X |
+| `<repo-relative-or-absolute-path/file.py#L40-L95>` | Core seam touched in this session |
 | `<commit SHA or PR/issue URL>` | Preceding change or open discussion |
 
 ## Settled Decisions (Do Not Re-Litigate)
@@ -81,5 +83,5 @@ Keep the entire document tight and scannable (typically 40–100 lines):
 
 After writing `handoff_<slug>.md` (or printing it in chat if requested):
 
-1. Report the exact artifact path (or confirm inline delivery) without re-summarizing the entire artifact.
-2. Provide a 1–2 line **copy-ready starter prompt** the user can paste directly into the fresh or cross-model session to bootstrap from the handoff (e.g., *"Read `handoff_<slug>.md`, inspect the listed context pointers, and execute the Exact Next Step."*).
+1. Report the exact **absolute path** to `handoff_<slug>.md` (or confirm inline delivery) without re-summarizing the entire artifact.
+2. Provide a 1–2 line **copy-ready starter prompt** embedding that **exact absolute path** so the user can paste it directly into a fresh or cross-model session that does not share Antigravity's artifact directory (e.g., *"Read `<absolute-path-to-artifact-dir>/handoff_<slug>.md>`, inspect the listed context pointers, and execute the Exact Next Step."*).
