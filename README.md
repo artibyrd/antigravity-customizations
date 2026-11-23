@@ -18,7 +18,7 @@ Every plugin carries an explicit **Origin** label:
 
 | Plugin | Origin | Components | What It Does | Docs |
 | :--- | :--- | :--- | :--- | :--- |
-| **`plan-model-advisor`** | `Original` *(v1.2.0 adds slicing & explore-first notes inspired by `mattpocock/skills`)* | 1 Skill (`plan-model-advisor`) | Reviews an implementation plan before coding—auto-checking Antigravity's live model catalog, flagging ~150k context-window slicing opportunities, and outputting a **Model & Swarm Execution Brief** across `quality-first`, `balanced`, and `quota-saver` profiles. | [Plugin README](./plugins/plan-model-advisor/README.md) |
+| **`plan-model-advisor`** | `Combined (Original + mattpocock/skills)` | 1 Skill (`plan-model-advisor`) | Reviews an implementation plan before coding—auto-checking Antigravity's live model catalog, flagging ~150k context-window slicing opportunities, and outputting a **Model & Swarm Execution Brief** across `quality-first`, `balanced`, and `quota-saver` profiles. | [Plugin README](./plugins/plan-model-advisor/README.md) |
 | **`knowledge-governance`** | `Combined (Original + mattpocock/skills)` | 1 Skill (`knowledge-governance`) | Manages the 4-Tier Knowledge Taxonomy (`AGENTS.md` <800 tokens Class α/β/γ → Tier 1 Skills → optional review-only `CODING_STANDARDS.md` → Tier 2 Test Gates → Tier 3 Docs), the Demotion Highway, `/learn` Admission Gate, Living Invariants vs. Historical ADRs, and Matt Pocock's 7 retro diagnostic categories. | [Plugin README](./plugins/knowledge-governance/README.md) |
 | **`diagnosing-bugs`** | `Adapted (mattpocock/skills)` | 1 Skill (`diagnosing-bugs`) + HITL script | 6-phase disciplined loop for hard bugs and performance regressions: build a tight, red-capable feedback loop first → reproduce & minimise → 3–5 falsifiable hypotheses → `[DEBUG-xxxx]` probes → seam regression test → cleanup + `<REDACTED>` secret hygiene. | [Plugin README](./plugins/diagnosing-bugs/README.md) |
 | **`tdd`** | `Combined (Original + mattpocock/skills)` | 1 Skill (`tdd`) | Vertical-slice red-green-refactor TDD at pre-agreed public seams, banning implementation-coupled mocks, tautological assertions, and horizontal slicing—paired with hermetic offline testing guardrails. | [Plugin README](./plugins/tdd/README.md) |
@@ -29,9 +29,18 @@ Every plugin carries an explicit **Origin** label:
 | **`pr-brief`** | `Combined (Original + mattpocock/skills)` | 1 Skill (`pr-brief`) | Visual-first PR body and Mk1 Eyeball walkthrough template: smallest clarifying visual (pseudocode, call/file/component tree, Mermaid, diff), Before/After Evidence, and Merge Danger (One-Way vs. Two-Way Door + Blast Radius). Credits Matt Pocock and Dex Horthy (`humanlayer/show-me`). | [Plugin README](./plugins/pr-brief/README.md) |
 | **`bootstrap-approvals`** | `Original` | 1 Skill (`bootstrap-approvals`) | Repo-agnostic Antigravity IDE permission priming: dynamically discovers safe read-only commands (`Justfile`, `Makefile`, `pyproject.toml`, `package.json`, `git`, `gh`), enforces the Subprocess Isolation Rule, and strictly bans *"Spicy Prefixes"* whose sibling args can mutate state. | [Plugin README](./plugins/bootstrap-approvals/README.md) |
 | **`session-handoff`** | `Adapted (mattpocock/skills)` | 1 Skill (`session-handoff`) | Compacts the current session into a sparse, absolute-path handoff artifact (`handoff_<slug>.md`) with context pointers, settled decisions, ruled-out dead ends, and exact next steps—tailored for Antigravity ↔ cross-model (e.g., Gemini → Claude) or fresh-session handoffs. | [Plugin README](./plugins/session-handoff/README.md) |
+| **`artifact-governance`** | `Combined (Original + mattpocock/skills)` | 1 Skill (`artifact-governance`) | Enforces Living Document vs. Historical Artifact badges, the Append-Only Ledger Protocol for `implementation_plan.md` & `walkthrough.md` (with `transcript_full.jsonl` recovery), the Clean Scratch Script Ritual, and primary-source cited research notes. | [Plugin README](./plugins/artifact-governance/README.md) |
+| **`reality-check-audit`** | `Original` | 1 Skill (`reality-check-audit`) | Runs a structured cross-model "Outsider's Honest Assessment" (`Good → Concerning → Aspirational vs. Real → Remediation Plans`) to hunt mocked/hardcoded telemetry, doc-vs-code drift, and governance bloat. | [Plugin README](./plugins/reality-check-audit/README.md) |
+| **`domain-modeling`** | `Adapted (mattpocock/skills)` | 1 Skill (`domain-modeling`) | Builds and sharpens a project's domain model lazily (`GLOSSARY.md` devoid of implementation details + 3-criteria Historical ADR gate, clearly distinct from Living Invariants), paired with native `/grill-me`. | [Plugin README](./plugins/domain-modeling/README.md) |
+| **`release-lifecycle`** | `Original` | 1 Skill (`release-lifecycle`) | Guides the 4-phase delivery and continuous learning cadence (`Local QA → PR/Dev Probe → Mk1 Eyeball → Release → /learn → Lean Patch`), `CHANGELOG`/`ROADMAP` symmetry, graceful preflight when `gh`/CI is absent, and topological multi-repo PR merge order. | [Plugin README](./plugins/release-lifecycle/README.md) |
+| **`repo-bootstrap`** | `Original` | 1 Skill (`repo-bootstrap`) | Optional, never-required interactive scaffolder for new repos: checks tool readiness and selectively initializes a `<800`-token `AGENTS.md`, modular `Justfile` safe/gated skeleton, optional `CODING_STANDARDS.md`, `GLOSSARY.md`, `docs/adr/`, and governance tests. | [Plugin README](./plugins/repo-bootstrap/README.md) |
+| **`workspace-hygiene-hooks`** | `Original` | 2 Hooks (`PostToolUse`, `Stop`) | Native plugin-root `hooks.json` with independently toggleable hooks: workspace-confined, fail-open `PostToolUse` auto-formatter (`ruff`, `prettier`, `gofmt`, `rustfmt`) and loop-safe `Stop` guard catching stray scratch/log files in workspace root. | [Plugin README](./plugins/workspace-hygiene-hooks/README.md) |
+| **`prototype`** | `Adapted (mattpocock/skills)` | 1 Skill (`prototype`) | Builds throwaway single-file HTML logic prototypes or radically different toggleable UI variations to resolve design questions quickly—adapted for Antigravity Artifacts and `generative_ui`. | [Plugin README](./plugins/prototype/README.md) |
+| **`wizard`** | `Adapted (mattpocock/skills)` | 1 Skill (`wizard`) + bash template | Generates safe, interactive bash runbook wizards (`template.sh`, `read -rs` secret hygiene, `[y/N]` gates) walking humans through steps agents cannot perform (infra provisioning, CI secrets, third-party dashboards, cutovers). | [Plugin README](./plugins/wizard/README.md) |
 
-### Planned Follow-On Wave
-* **Wave 3:** `artifact-governance`, `reality-check-audit`, `domain-modeling`, `release-lifecycle`, `repo-bootstrap`, `workspace-hygiene-hooks`, `prototype`, `wizard`, plus an end-to-end **Agentic Pair Programming Protocol** guide and an **Upstream Adaptations & Deviations** rationale doc (covering our deviations from `mattpocock/skills` and intentionally excluded skills).
+### Architecture & Workflow Guides
+* **[Agentic Pair Programming Protocol](./docs/agentic-pair-programming-protocol.md)** — End-to-end walkthrough showing how our standard 5-stage feature lifecycle strings these plugins and native Antigravity slash commands together, plus a situational decision matrix and worked example.
+* **[Upstream Adaptations, Provenance & Deviations](./docs/upstream-adaptations-and-deviations.md)** — Full 19-plugin provenance table, principled rationale for every deviation from `mattpocock/skills`, and complete 39-skill accounting (including all 26 intentionally excluded skills and why).
 
 ---
 
@@ -110,7 +119,7 @@ Supported `plan-model-advisor` profiles:
 
 ```text
 antigravity-customizations/
-├── plugins/                              # One subdirectory per installable plugin (11 plugins)
+├── plugins/                              # One subdirectory per installable plugin (19 plugins)
 │   ├── plan-model-advisor/               # Model, effort, context-slicing & swarm advisor
 │   ├── knowledge-governance/             # 4-Tier taxonomy, Demotion Highway & retro checklist
 │   ├── diagnosing-bugs/                  # 6-phase red-loop debugging discipline + HITL script
@@ -121,11 +130,23 @@ antigravity-customizations/
 │   ├── architecture-review/              # Deep Modules + ~500 LOC trigger + operational guardrails
 │   ├── pr-brief/                         # Visual-first PR body & Mk1 Eyeball walkthrough standard
 │   ├── bootstrap-approvals/              # Repo-agnostic Antigravity IDE permission priming
-│   └── session-handoff/                  # Sparse cross-model / fresh-session handoff artifacts
+│   ├── session-handoff/                  # Sparse cross-model / fresh-session handoff artifacts
+│   ├── artifact-governance/              # Living vs. Historical docs, append-only ledgers & notes
+│   ├── reality-check-audit/              # Cross-model adversarial "Outsider's Honest Assessment"
+│   ├── domain-modeling/                  # Lazy GLOSSARY.md + 3-criteria Historical ADR gate
+│   ├── release-lifecycle/                # 4-phase cadence, graceful preflight & merge order
+│   ├── repo-bootstrap/                   # Optional interactive repo governance scaffolder
+│   ├── workspace-hygiene-hooks/          # Native PostToolUse formatter & Stop scratch-file guard
+│   ├── prototype/                        # Throwaway HTML logic & toggleable UI prototypes
+│   └── wizard/                           # Interactive human-in-the-loop bash runbook generator
+├── docs/
+│   ├── agentic-pair-programming-protocol.md     # Standard workflow + situational skill matrix
+│   └── upstream-adaptations-and-deviations.md   # Provenance, deviations & 39-skill audit
 ├── scripts/
-│   └── validate_customizations.py        # Zero-dependency manifest/skill/hook/link checker
+│   └── validate_customizations.py        # Zero-dependency manifest/skill/hook/doc link checker
 ├── tests/
-│   └── test_git_guardrails.py            # Stdlib unittest suite for git-guardrails hook
+│   ├── test_git_guardrails.py            # Stdlib unittest suite for git-guardrails hook
+│   └── test_workspace_hygiene_hooks.py   # Stdlib unittest suite for workspace-hygiene-hooks
 ├── .github/workflows/validate.yml        # Automated PR & push validation + hook unit tests
 ├── Justfile                              # Local QA recipes (`just check`)
 ├── LICENSE                               # MIT
@@ -158,17 +179,17 @@ The GitHub Actions workflow ([`.github/workflows/validate.yml`](./.github/workfl
 * `plugin.json` JSON/JSONC validity, allowed top-level schema keys, kebab-case naming, global name uniqueness, and `suggestedPrompts` limits.
 * `SKILL.md` YAML frontmatter completeness, directory/name parity, rejection of Claude Code–only frontmatter keys, and relative markdown link resolution (including `references/`).
 * Native plugin `hooks.json` placement and schema validity (rejecting misplaced `hooks/hooks.json` and verifying referenced local scripts exist) plus stdlib `unittest` coverage under `tests/`.
-* Zero leaked local filesystem paths and catalog parity between `plugins/` and this `README.md`.
+* Zero leaked local filesystem paths across `plugins/` and `docs/`, valid relative links in `docs/**/*.md`, and catalog parity between `plugins/` and this `README.md`.
 
 ---
 
 ## Credits & Upstream Attribution
 
 Several plugins in this repository are directly adapted from or combined with ideas from:
-* **[Matt Pocock's `skills`](https://github.com/mattpocock/skills)** (*Copyright (c) 2026 Matt Pocock*, MIT License) — upstream foundation for `diagnosing-bugs`, `tdd`, `code-review`, `git-guardrails`, `knowledge-governance` (retro categories), `writing-for-agents`, `architecture-review`, `pr-brief`, `session-handoff`, and v1.2.0 slicing notes in `plan-model-advisor`.
+* **[Matt Pocock's `skills`](https://github.com/mattpocock/skills)** (*Copyright (c) 2026 Matt Pocock*, MIT License) — upstream foundation for `diagnosing-bugs`, `tdd`, `code-review`, `git-guardrails`, `knowledge-governance` (`retro`), `writing-for-agents`, `architecture-review`, `pr-brief`, `session-handoff`, `artifact-governance` (`research`), `domain-modeling`, `prototype`, `wizard`, and v1.2.0 slicing notes in `plan-model-advisor`.
 * **[Dex Horthy / Humanlayer (`show-me`)](https://github.com/humanlayer/humanlayer)** — visual summary menu (pseudocode, call trees, component trees, file trees, Mermaid, diffs) and placement guidance preserved via `pr-brief`.
 
-Because `mattpocock/skills` targets Claude Code's conventions, every adapted or combined plugin here has been re-engineered for **Google Antigravity** (strict `name`/`description` frontmatter, standalone à la carte `plugin.json` packaging with zero global setup requirements, native `invoke_subagent`/`swarm` orchestration, Antigravity Artifacts instead of `/tmp` + `xdg-open`, and plugin-root `hooks.json` JSON contracts). Each plugin's individual `README.md` includes an **`Origin & Attribution`** section detailing exact upstream credits, mechanical Antigravity adaptations, and any behavioral additions or changes from our own workflows.
+Because `mattpocock/skills` targets Claude Code's conventions, every adapted or combined plugin here has been re-engineered for **Google Antigravity** (strict `name`/`description` frontmatter, standalone à la carte `plugin.json` packaging with zero global setup requirements, native `invoke_subagent`/`swarm` orchestration, Antigravity Artifacts instead of `/tmp` + `xdg-open`, and plugin-root `hooks.json` JSON contracts). Each plugin's individual `README.md` includes an **`Origin & Attribution`** section, and **[`docs/upstream-adaptations-and-deviations.md`](./docs/upstream-adaptations-and-deviations.md)** explains every deviation and intentionally excluded upstream skill in detail.
 
 ---
 
