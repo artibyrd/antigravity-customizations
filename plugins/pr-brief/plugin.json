@@ -1,0 +1,20 @@
+{
+  "name": "pr-brief",
+  "displayName": "PR Brief",
+  "version": "1.0.0",
+  "description": "Visual-first pull request body and Mk1 Eyeball walkthrough standard: smallest visual from a curated menu (pseudocode, call tree, component tree, file tree, Mermaid, diff), Before/After Evidence, and Merge Danger (One-Way vs. Two-Way Door plus Blast Radius). Works with gh CLI or outputs copy-ready Markdown cleanly without gh.",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Write a visual-first PR brief for this branch with before/after evidence and merge danger",
+    "Generate a copy-ready PR description and Mk1 Eyeball walkthrough against main",
+    "Update the current pull request description using the pr-brief visual standard"
+  ]
+}
