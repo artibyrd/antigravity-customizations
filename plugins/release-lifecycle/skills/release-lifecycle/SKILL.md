@@ -20,7 +20,7 @@ Delivers features cleanly and turns every release boundary into a structured imp
 
 Never assume GitHub Actions, `gh` CLI, `Justfile`, `CHANGELOG.md`, `ROADMAP.md`, or cloud staging environments exist. Probe the active workspace first:
 
-1. **Git topology:** Check `git remote -v`, `git branch --show-current`, and `git status -sb`.
+1. **Git topology:** Check `git remote -v`, `git rev-parse --abbrev-ref HEAD`, and `git status -sb`.
 2. **GitHub CLI availability:** If `gh` is on `PATH`, check `gh auth status` (do not fail if `gh` is missing or unauthenticated).
 3. **CI/CD pipelines:** Check whether `.github/workflows/` (or other CI configs such as `.gitlab-ci.yml`, `cloudbuild.yaml`) exists.
 4. **Local QA runner:** Inspect `Justfile`, `Makefile`, `pyproject.toml`, `package.json`, `Cargo.toml`, or `go.mod` to discover the repo's real check/test command (e.g., `just check`, `pytest`, `npm test`, `cargo test`).
