@@ -1,0 +1,20 @@
+{
+  "name": "git-guardrails",
+  "displayName": "Git Guardrails",
+  "version": "1.0.0",
+  "description": "PreToolUse shell hook that blocks destructive git commands (force push, reset --hard, clean -f, branch -D, checkout/restore .) and requires explicit confirmation for standard git push while allowing normal local commits.",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Show which git commands are blocked or gated by the git-guardrails hook",
+    "Verify that git push --force and git reset --hard are blocked while git commit is allowed",
+    "Explain how to customize the blocked git patterns in git-guardrails"
+  ]
+}
