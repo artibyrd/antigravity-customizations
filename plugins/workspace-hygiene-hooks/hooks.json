@@ -1,0 +1,25 @@
+{
+  "auto-format": {
+    "PostToolUse": [
+      {
+        "matcher": "write_file|edit_file|replace_file_content|multi_replace_file_content|write_to_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ./hooks/auto_format.py",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "workspace-clean-check": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python3 ./hooks/check_workspace_clean.py",
+        "timeout": 5
+      }
+    ]
+  }
+}
