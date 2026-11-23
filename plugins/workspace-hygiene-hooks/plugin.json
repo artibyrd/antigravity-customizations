@@ -1,0 +1,20 @@
+{
+  "name": "workspace-hygiene-hooks",
+  "displayName": "Workspace Hygiene Hooks",
+  "version": "1.0.0",
+  "description": "Antigravity PostToolUse and Stop lifecycle hooks that auto-format edited workspace files using installed formatters (ruff, prettier, gofmt, rustfmt) and detect stray scratch or debug files left in the workspace root before finishing.",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Show which formatters and stray-file patterns are configured in workspace-hygiene-hooks",
+    "Explain how to disable auto-format or workspace-clean-check independently in hooks.json",
+    "Verify how workspace-hygiene-hooks confines formatting to the workspace and prevents Stop hook loops"
+  ]
+}
