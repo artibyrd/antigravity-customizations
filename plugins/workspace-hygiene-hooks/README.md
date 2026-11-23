@@ -13,7 +13,7 @@ Triggered on `write_file|edit_file|replace_file_content|multi_replace_file_conte
 
 - **Tool schema compatibility:** Reads `toolCall.args.Path` (Antigravity 2.0) and falls back to `toolCall.args.TargetFile` (Antigravity IDE).
 - **Skip on tool failure:** If `error` is present in the `PostToolUse` payload, skips formatting immediately.
-- **Workspace confinement:** Resolves real paths (`os.path.realpath`) and verifies the target file resides strictly inside one of `workspacePaths` (when non-empty), rejecting `../` traversal, symlink escapes, external paths such as `/tmp`, and files inside `artifactDirectoryPath`.
+- **Workspace confinement:** Resolves real paths (`os.path.realpath`) and verifies the target file resides strictly inside an active directory in `workspacePaths` (failing safe and skipping formatting when `workspacePaths` is missing, empty, or has no valid workspace root), rejecting `../` traversal, symlink escapes, external paths such as `/tmp`, and files inside `artifactDirectoryPath`.
 - **Fail-open multi-language dispatch:** Checks `shutil.which(...)` first, invokes the formatter without `shell=True`, suppresses formatter stdout/stderr, and always outputs `{}` with exit code `0` even if a formatter is absent, fails, or times out.
 
 | Extensions | Formatter Command | Notes |

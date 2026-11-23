@@ -378,6 +378,34 @@ class TestAutoFormatHook(unittest.TestCase):
                     f"Formatter must NOT run for rejected case {label}",
                 )
 
+    def test_empty_or_missing_workspace_paths_skips_formatting(self) -> None:
+        target = self.outside / "no_workspace.py"
+        target.write_text("x=1\n", encoding="utf-8")
+
+        cases = [
+            ("empty_list", []),
+            ("missing_field", None),
+            ("nonexistent_root", [str(self.tmp_root / "does-not-exist")]),
+            ("relative_root", ["."]),
+        ]
+        for label, ws_paths in cases:
+            with self.subTest(case=label):
+                self.log_path.unlink(missing_ok=True)
+                res = _run_hook(
+                    AUTO_FORMAT_SCRIPT,
+                    self._make_post_payload(
+                        {"Path": str(target)},
+                        workspace_paths=ws_paths,
+                    ),
+                    env=self._env_with_path(self.bin_dir),
+                )
+                self.assertEqual(res, {})
+                self.assertEqual(
+                    _read_invocations(self.log_path),
+                    [],
+                    f"Formatter must NOT run when workspacePaths is {label}",
+                )
+
     def test_missing_formatter_fails_open(self) -> None:
         py_file = self.workspace / "missing_tool.py"
         py_file.write_text("x=1\n", encoding="utf-8")

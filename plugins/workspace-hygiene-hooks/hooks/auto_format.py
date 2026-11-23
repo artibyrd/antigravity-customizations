@@ -13,9 +13,10 @@ runs an installed formatter for supported file extensions:
 - ``.go`` -> ``gofmt -w <file>``
 - ``.rs`` -> ``rustfmt <file>``
 
-Always fails open: skips when ``error`` is present, when the path lies outside
-``workspacePaths``, when no matching formatter is installed on ``PATH``, or on
-malformed input / formatter timeouts. Always prints ``{}`` on stdout and exits 0.
+Always fails open: skips when ``error`` is present, when ``workspacePaths`` is
+missing/empty or the target lies outside ``workspacePaths``, when no matching
+formatter is installed on ``PATH``, or on malformed input / formatter timeouts.
+Always prints ``{}`` on stdout and exits 0.
 
 Zero third-party dependencies (Python 3.10+ stdlib only).
 """
@@ -92,12 +93,28 @@ def resolve_target_file(payload: dict[str, object]) -> tuple[str, str] | None:
     if raw_path is None or "\x00" in raw_path:
         return None
 
-    workspace_paths_raw = payload.get("workspacePaths")
-    if workspace_paths_raw is not None and not isinstance(workspace_paths_raw, list):
+    workspace_paths = payload.get("workspacePaths")
+    if not isinstance(workspace_paths, list) or not workspace_paths:
         return None
-    workspace_paths: list[object] = (
-        workspace_paths_raw if isinstance(workspace_paths_raw, list) else []
-    )
+
+    real_workspaces: list[str] = []
+    for ws in workspace_paths:
+        if (
+            not isinstance(ws, str)
+            or not ws.strip()
+            or "\x00" in ws
+            or not os.path.isabs(ws)
+        ):
+            continue
+        try:
+            real_ws = os.path.realpath(ws)
+        except (OSError, ValueError):
+            continue
+        if os.path.isdir(real_ws):
+            real_workspaces.append(real_ws)
+
+    if not real_workspaces:
+        return None
 
     cwd_raw = payload.get("cwd")
     cwd = (
@@ -113,11 +130,8 @@ def resolve_target_file(payload: dict[str, object]) -> tuple[str, str] | None:
         candidate = raw_path
     elif cwd is not None:
         candidate = os.path.join(cwd, raw_path)
-    elif len(workspace_paths) == 1 and isinstance(workspace_paths[0], str):
-        ws0 = workspace_paths[0]
-        if not ws0.strip() or "\x00" in ws0 or not os.path.isabs(ws0):
-            return None
-        candidate = os.path.join(ws0, raw_path)
+    elif len(real_workspaces) == 1:
+        candidate = os.path.join(real_workspaces[0], raw_path)
     else:
         return None
 
@@ -144,25 +158,17 @@ def resolve_target_file(payload: dict[str, object]) -> tuple[str, str] | None:
             return None
 
     matched_root: str | None = None
-    if workspace_paths:
-        for ws in workspace_paths:
-            if not isinstance(ws, str) or not ws.strip() or "\x00" in ws:
-                continue
-            try:
-                real_ws = os.path.realpath(ws)
-            except (OSError, ValueError):
-                continue
-            if is_within_directory(real_target, real_ws):
-                matched_root = real_ws
-                break
-        if matched_root is None:
-            return None
+    for real_ws in real_workspaces:
+        if is_within_directory(real_target, real_ws):
+            matched_root = real_ws
+            break
+    if matched_root is None:
+        return None
 
     if not os.path.isfile(real_target):
         return None
 
-    run_cwd = matched_root if matched_root is not None else os.path.dirname(real_target)
-    return real_target, run_cwd
+    return real_target, matched_root
 
 
 def get_formatter_command(target_path: str) -> list[str] | None:
