@@ -80,6 +80,7 @@ python3 -m unittest discover -s tests -v
 ## Customization
 
 - **Temporarily disable the hook:** Set `"enabled": false` under `"git-guardrails"` in [`hooks.json`](./hooks.json), or toggle the plugin off in Antigravity's Customizations UI.
+- **Live-sync branch-switch note:** If you live-sync this repository's `plugins/` directory via `~/.gemini/config/plugins.json` and check out an older branch where `plugins/git-guardrails/` does not exist yet, Antigravity's already-loaded `PreToolUse` hook will fail on `chdir` for `run_command` until you switch back to a branch containing the plugin (or toggle/reload plugins). Keep `plugins/git-guardrails/` merged on `main` when developing new branches.
 - **Adjust blocked or gated rules:** Edit the per-subcommand rule functions in [`hooks/guard_git.py`](./hooks/guard_git.py) (`_check_git_push`, `_check_git_reset`, `_check_git_clean`, `_check_git_branch`, `_check_git_checkout`, `_check_git_restore`) and the `_GIT_SUBCOMMAND_RULES` dispatch table.
   - To hard-block *all* `git push` invocations (matching upstream's stricter posture), change `_SEV_FORCE_ASK` / `"force_ask"` at the bottom of `_check_git_push` to `_SEV_DENY` / `"deny"`.
   - To add a new rule (for example, blocking `git commit` or `git stash drop`), add a `_check_git_<subcommand>` function and register it in `_GIT_SUBCOMMAND_RULES`.

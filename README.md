@@ -24,9 +24,13 @@ Every plugin carries an explicit **Origin** label:
 | **`tdd`** | `Combined (Original + mattpocock/skills)` | 1 Skill (`tdd`) | Vertical-slice red-green-refactor TDD at pre-agreed public seams, banning implementation-coupled mocks, tautological assertions, and horizontal slicing—paired with hermetic offline testing guardrails. | [Plugin README](./plugins/tdd/README.md) |
 | **`code-review`** | `Combined (Original + mattpocock/skills)` | 1 Skill (`code-review`) | Runs three parallel fresh Antigravity subagents (`invoke_subagent`) over `git diff <fixed-point>...HEAD`: **Axis 1 (Standards + 12 Fowler Code Smells)**, **Axis 2 (Spec Fidelity + Reality-Check/Zero-Mock lens)**, and **Axis 3 (Security)**, reported side by side without merging or reranking. | [Plugin README](./plugins/code-review/README.md) |
 | **`git-guardrails`** | `Combined (Original + mattpocock/skills)` | 1 `PreToolUse` Hook (`hooks.json`) | Native Antigravity `PreToolUse` hook hard-blocking destructive git commands (`push --force`/`--mirror`, `reset --hard`, `clean -f`, `branch -D`, `checkout .`, `restore .`), `force_ask`-gating `git push`, allowing local `git commit`, and using a sandbox-aware `ask`/`allow` fallback. | [Plugin README](./plugins/git-guardrails/README.md) |
+| **`writing-for-agents`** | `Combined (Original + mattpocock/skills)` | 1 Skill (`writing-for-agents`) | Authoring guide for Antigravity skills, plugins, `AGENTS.md`, and `hooks.json` combining Matt Pocock's prompt-craft levers (context pointers, leading words, anti-negation, no-op hunting, pruning) with Antigravity schema rules and the <800-token `AGENTS.md` ceiling. | [Plugin README](./plugins/writing-for-agents/README.md) |
+| **`architecture-review`** | `Combined (Original + mattpocock/skills)` | 1 Skill (`architecture-review`) | Hotspot-scoped architecture review harmonizing Ousterhout Deep Modules (Deletion Test, Design-It-Twice parallel subagents) with a ~500 LOC soft internal decomposition trigger, Antigravity Mermaid Artifacts, and operational guardrails (safe DOM sinks, Playwright lazy-image checks, modular Justfiles). | [Plugin README](./plugins/architecture-review/README.md) |
+| **`pr-brief`** | `Combined (Original + mattpocock/skills)` | 1 Skill (`pr-brief`) | Visual-first PR body and Mk1 Eyeball walkthrough template: smallest clarifying visual (pseudocode, call/file/component tree, Mermaid, diff), Before/After Evidence, and Merge Danger (One-Way vs. Two-Way Door + Blast Radius). Credits Matt Pocock and Dex Horthy (`humanlayer/show-me`). | [Plugin README](./plugins/pr-brief/README.md) |
+| **`bootstrap-approvals`** | `Original` | 1 Skill (`bootstrap-approvals`) | Repo-agnostic Antigravity IDE permission priming: dynamically discovers safe read-only commands (`Justfile`, `Makefile`, `pyproject.toml`, `package.json`, `git`, `gh`), enforces the Subprocess Isolation Rule, and strictly bans *"Spicy Prefixes"* whose sibling args can mutate state. | [Plugin README](./plugins/bootstrap-approvals/README.md) |
+| **`session-handoff`** | `Adapted (mattpocock/skills)` | 1 Skill (`session-handoff`) | Compacts the current session into a sparse, absolute-path handoff artifact (`handoff_<slug>.md`) with context pointers, settled decisions, ruled-out dead ends, and exact next steps—tailored for Antigravity ↔ cross-model (e.g., Gemini → Claude) or fresh-session handoffs. | [Plugin README](./plugins/session-handoff/README.md) |
 
-### Planned Follow-On Waves
-* **Wave 2:** `writing-for-agents`, `architecture-review`, `pr-brief`, `bootstrap-approvals`, `session-handoff`.
+### Planned Follow-On Wave
 * **Wave 3:** `artifact-governance`, `reality-check-audit`, `domain-modeling`, `release-lifecycle`, `repo-bootstrap`, `workspace-hygiene-hooks`, `prototype`, `wizard`, plus an end-to-end **Agentic Pair Programming Protocol** guide and an **Upstream Adaptations & Deviations** rationale doc (covering our deviations from `mattpocock/skills` and intentionally excluded skills).
 
 ---
@@ -106,13 +110,18 @@ Supported `plan-model-advisor` profiles:
 
 ```text
 antigravity-customizations/
-├── plugins/                              # One subdirectory per installable plugin
+├── plugins/                              # One subdirectory per installable plugin (11 plugins)
 │   ├── plan-model-advisor/               # Model, effort, context-slicing & swarm advisor
 │   ├── knowledge-governance/             # 4-Tier taxonomy, Demotion Highway & retro checklist
 │   ├── diagnosing-bugs/                  # 6-phase red-loop debugging discipline + HITL script
 │   ├── tdd/                              # Vertical-slice seam TDD + hermetic testing
-│   ├── code-review/                      # Parallel 2-axis subagent review (Standards vs. Spec)
-│   └── git-guardrails/                   # Native PreToolUse hooks.json destructive-git guard
+│   ├── code-review/                      # Parallel 3-axis review (Standards, Spec, Security)
+│   ├── git-guardrails/                   # Native PreToolUse hooks.json destructive-git guard
+│   ├── writing-for-agents/               # Prompt craft + Antigravity skill/hook mechanics
+│   ├── architecture-review/              # Deep Modules + ~500 LOC trigger + operational guardrails
+│   ├── pr-brief/                         # Visual-first PR body & Mk1 Eyeball walkthrough standard
+│   ├── bootstrap-approvals/              # Repo-agnostic Antigravity IDE permission priming
+│   └── session-handoff/                  # Sparse cross-model / fresh-session handoff artifacts
 ├── scripts/
 │   └── validate_customizations.py        # Zero-dependency manifest/skill/hook/link checker
 ├── tests/
@@ -155,9 +164,11 @@ The GitHub Actions workflow ([`.github/workflows/validate.yml`](./.github/workfl
 
 ## Credits & Upstream Attribution
 
-Several plugins in this repository are directly adapted from or combined with ideas from **[Matt Pocock's `skills`](https://github.com/mattpocock/skills)** (*Copyright (c) 2026 Matt Pocock*, released under the MIT License).
+Several plugins in this repository are directly adapted from or combined with ideas from:
+* **[Matt Pocock's `skills`](https://github.com/mattpocock/skills)** (*Copyright (c) 2026 Matt Pocock*, MIT License) — upstream foundation for `diagnosing-bugs`, `tdd`, `code-review`, `git-guardrails`, `knowledge-governance` (retro categories), `writing-for-agents`, `architecture-review`, `pr-brief`, `session-handoff`, and v1.2.0 slicing notes in `plan-model-advisor`.
+* **[Dex Horthy / Humanlayer (`show-me`)](https://github.com/humanlayer/humanlayer)** — visual summary menu (pseudocode, call trees, component trees, file trees, Mermaid, diffs) and placement guidance preserved via `pr-brief`.
 
-Because `mattpocock/skills` targets Claude Code's conventions, every adapted or combined plugin here has been re-engineered for **Google Antigravity** (strict `name`/`description` frontmatter, standalone à la carte `plugin.json` packaging with zero global setup requirements, native `invoke_subagent`/`swarm` orchestration, and plugin-root `hooks.json` JSON contracts). Each plugin's individual `README.md` includes an **`Origin & Attribution`** section detailing exact upstream credits, mechanical Antigravity adaptations, and any behavioral additions or changes from our own workflows.
+Because `mattpocock/skills` targets Claude Code's conventions, every adapted or combined plugin here has been re-engineered for **Google Antigravity** (strict `name`/`description` frontmatter, standalone à la carte `plugin.json` packaging with zero global setup requirements, native `invoke_subagent`/`swarm` orchestration, Antigravity Artifacts instead of `/tmp` + `xdg-open`, and plugin-root `hooks.json` JSON contracts). Each plugin's individual `README.md` includes an **`Origin & Attribution`** section detailing exact upstream credits, mechanical Antigravity adaptations, and any behavioral additions or changes from our own workflows.
 
 ---
 
