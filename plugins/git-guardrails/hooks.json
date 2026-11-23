@@ -1,0 +1,16 @@
+{
+  "git-guardrails": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ./hooks/guard_git.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
