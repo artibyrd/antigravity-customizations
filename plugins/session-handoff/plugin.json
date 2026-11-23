@@ -1,0 +1,20 @@
+{
+  "name": "session-handoff",
+  "displayName": "Session Handoff",
+  "version": "1.0.0",
+  "description": "Compacts the current Antigravity session into a crisp handoff artifact (handoff_<slug>.md) tailored for cross-model or fresh-session continuation—capturing sparse context pointers, live git state, settled decisions, open questions, verification status, and the exact next step without duplicating large files.",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Create a session handoff artifact so a fresh Claude session can continue from here",
+    "Compact this session into a handoff brief focused on the remaining verification steps",
+    "Write a cross-model handoff document with our git state, settled decisions, and exact next step"
+  ]
+}

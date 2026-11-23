@@ -1,0 +1,20 @@
+{
+  "name": "bootstrap-approvals",
+  "displayName": "Bootstrap Approvals",
+  "version": "1.0.0",
+  "description": "Repo-agnostic Antigravity IDE command approval priming. Dynamically discovers safe read-only commands in the current workspace, enforces the Subprocess Isolation Rule and 'No Spicy Prefixes' Command Boundary Law, confirms the proposed command list with you first, and executes discrete top-level run_command calls so you can click 'Always Allow' in one pass.",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Bootstrap safe read-only command approvals for this workspace",
+    "Discover safe QA and git inspection commands in this repo and prime Always Allow",
+    "Audit which read-only prefixes are safe to prime here without spicy commands"
+  ]
+}
