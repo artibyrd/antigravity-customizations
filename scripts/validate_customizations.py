@@ -379,6 +379,13 @@ def main() -> int:
                     f"README.md: catalog missing reference to '{expected_link}'"
                 )
 
+    # Check relative links and local path leaks in top-level docs/ if present
+    docs_dir = REPO_ROOT / "docs"
+    if docs_dir.is_dir():
+        for doc_md in sorted(docs_dir.rglob("*.md")):
+            check_relative_links(doc_md, errors)
+        check_local_path_leaks(docs_dir, errors)
+
     if errors:
         print("Validation FAILED:\n", file=sys.stderr)
         for err in errors:
