@@ -98,11 +98,11 @@ Never put destructive commands in `safe.just`. Always protect mutating recipes w
 # Mutating or irreversible workflows — always protected by [confirm(...)].
 # Non-interactive CI/agent invocations require explicit authorization (`just --yes <recipe>`).
 
-# Stage and commit current changes after explicit confirmation
+# Commit already-staged changes after explicit confirmation
 [group('vcs: gated')]
 [confirm('Commit staged changes on the current branch? [y/N]')]
 commit message:
-    git commit -m "{{message}}"
+    git commit -m {{quote(message)}}
 
 # Push current branch to origin (non-force) after explicit confirmation
 [group('vcs: gated')]

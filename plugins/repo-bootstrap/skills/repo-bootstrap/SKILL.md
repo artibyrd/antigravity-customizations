@@ -30,15 +30,17 @@ An on-demand interactive initializer for new or unconfigured repositories.
 
 First inspect the repository root (read-only file listing / reading manifests such as `pyproject.toml`, `package.json`, `Cargo.toml`, `go.mod`, `Makefile`, `Justfile`) to detect the project's language stack.
 
-Then probe tool readiness using **only** safe, read-only invocations (discrete commands, no mutating flags):
+Then probe tool readiness using **only** safe, read-only invocations (discrete commands, no mutating flags).
+
+> **Prefix Safety Note (One-Off Probes Only):** Run these readiness checks strictly as **one-off** read-only probes—never recommend clicking **"Always Allow"** on subcommand-less binaries (`pytest`, `mypy`, `ruff`, `prettier`, `eslint`, `node`, `python3`) or multi-level CLI namespaces (`gh auth`), because single-token or broad 2-token prefixes generalize across mutating flags (`prettier --write`, `eslint --fix`, `ruff check --fix`, `node -e`, `pytest --basetemp=<dir>`, `gh auth logout`/`token`). For repeated checks, encapsulate exact read-only invocations in `just/safe.just` recipes (`just lint`, `just test`, `just auth-check`).
 
 | Tool / Area | Safe Read-Only Probe Command | Notes |
 | :--- | :--- | :--- |
-| **Git** | `git --version` and `git rev-parse --abbrev-ref HEAD` | If not inside a git repo, note `not initialized` (do not run `git init` automatically). |
-| **GitHub CLI** | `gh --version` and (if installed) `gh auth status` | Read-only status check; degrade gracefully if unauthenticated or offline. Treat `gh auth status` as a one-off read-only check—never recommend priming "Always Allow" on the 2-token `gh auth` prefix (which also matches `gh auth logout`/`token`); wrap it in a `Justfile` recipe if repeated checks are needed. |
+| **Git** | `git --version` and `git rev-parse --abbrev-ref HEAD` | If not inside a git repo, note `not initialized` (do not run `git init` automatically). Never use `git branch` (`git branch -D` prefix overlap). |
+| **GitHub CLI** | `gh --version` and (if installed) `gh auth status` | Read-only status check; degrade gracefully if unauthenticated or offline. Treat `gh auth status` strictly as a one-off probe (never Always Allow `gh auth`). |
 | **Task Runner** | `just --version` | Optional; required only if scaffolding `Justfile`. |
 | **Python** | `python3 --version` | Used for zero-dependency governance tests (`tests/governance/`). |
-| **Detected Stack Tools** | Probe **only** linters/formatters relevant to detected manifests using `--version` (e.g., `ruff --version`, `pytest --version`, `mypy --version`, `node --version`, `pnpm --version`, `prettier --version`, `eslint --version`, `cargo --version`, `go version`, `shellcheck --version`). | Skip tools unrelated to the detected stack. |
+| **Detected Stack Tools** | Prefer read-only PATH presence checks (`command -v <tool>`)—or one-off `--version` / `version` checks when version numbers matter—only for tools matching detected manifests (`ruff`, `pytest`, `mypy`, `node`, `pnpm`, `prettier`, `eslint`, `cargo`, `go`, `shellcheck`). | Skip tools unrelated to the detected stack. Treat any direct `--version` probe on a subcommand-less binary strictly as a one-off check (never Always Allow the single-token binary prefix). |
 
 Summarize the results in a concise **Environment Readiness Table** (`Tool | Status | Detail`) with optional one-line install hints for anything missing.
 
