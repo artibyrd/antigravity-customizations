@@ -2,7 +2,7 @@
   "name": "code-review",
   "displayName": "Code Review",
   "version": "1.0.0",
-  "description": "Parallel two-axis diff review using fresh Antigravity subagents: Axis 1 checks repo standards (including optional CODING_STANDARDS.md) plus 12 Fowler code smells; Axis 2 checks spec fidelity plus a Reality-Check / Zero-Mock lens. Reports both axes separately without merging or reranking.",
+  "description": "Parallel three-axis diff review using fresh Antigravity subagents: Axis 1 checks repo standards (including optional CODING_STANDARDS.md) plus 12 Fowler code smells; Axis 2 checks spec fidelity plus a Reality-Check / Zero-Mock lens; Axis 3 audits security boundaries, injection/XSS sinks, secrets, SSRF, and races. Reports all three axes separately without merging or reranking.",
   "author": {
     "name": "Arthur Davis",
     "url": "https://github.com/artibyrd"
@@ -13,8 +13,8 @@
     "url": "https://github.com/artibyrd/antigravity-customizations"
   },
   "suggestedPrompts": [
-    "Review my changes since main along both Standards and Spec axes",
-    "Run a two-axis code review since HEAD~3 against implementation_plan.md",
-    "Audit this branch diff for Fowler code smells and hardcoded mocks or fallbacks"
+    "Review my changes since main along Standards, Spec, and Security axes",
+    "Run a three-axis code review since HEAD~3 against implementation_plan.md",
+    "Audit this branch diff for Fowler code smells, hardcoded mocks, and security flaws"
   ]
 }

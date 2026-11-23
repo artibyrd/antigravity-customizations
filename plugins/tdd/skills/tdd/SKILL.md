@@ -51,6 +51,7 @@ Keep unit and seam tests **fast, deterministic, and offline**:
 
 - **Implementation-coupled:** Mocks internal collaborators, invokes private methods, asserts call counts/order, or verifies via a side channel (querying internal DB tables instead of calling the public read interface). *Tell:* the test breaks during a behavior-preserving refactor.
 - **Tautological:** Recomputes the expected value using the same formula as the production code (`expect(add(a, b)).toBe(a + b)` or mirroring logic in the test), so it passes by construction. Expected values must come from an independent source of truth: a known-good literal, a worked example, or the specification.
+- **Test-file stand-ins:** Re-implements production validation, parsing, or handler logic as local helper functions inside the test file instead of calling the actual production seam. Security, parser, and integration tests must exercise real production handlers and validators directly.
 - **Horizontal slicing:** Writing all tests upfront, then writing all implementation. Bulk upfront tests assert *imagined* shapes instead of real behavior and lock in rigid structure before learning from the code. Use **vertical slices** instead: one failing test → one minimal implementation → repeat, letting each tracer-bullet cycle inform the next.
 
 ---
