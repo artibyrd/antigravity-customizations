@@ -33,7 +33,14 @@ def _load_guard_module():
 guard_git = _load_guard_module()
 
 
-def _make_payload(command_line: str, tool_name: str = "run_command") -> str:
+def _make_payload(
+    command_line: str,
+    tool_name: str = "run_command",
+    bypass_sandbox: bool | None = None,
+) -> str:
+    args: dict[str, object] = {"CommandLine": command_line}
+    if bypass_sandbox is not None:
+        args["BypassSandbox"] = bypass_sandbox
     return json.dumps(
         {
             "conversationId": "test-conv-001",
@@ -41,7 +48,7 @@ def _make_payload(command_line: str, tool_name: str = "run_command") -> str:
             "toolCall": {
                 "id": "toolu_01",
                 "name": tool_name,
-                "args": {"CommandLine": command_line},
+                "args": args,
             },
         }
     )
@@ -102,13 +109,41 @@ class TestSubprocessContract(unittest.TestCase):
 
     def test_cli_allow_decision_schema(self) -> None:
         res = _run_hook_subprocess(_make_payload("git commit -m 'feat: safe'"))
-        self.assertEqual(res["decision"], "allow")
+        self.assertEqual(res, {"decision": "allow"})
+
+    def test_cli_sandbox_aware_pass_through(self) -> None:
+        # Unsandboxed safe/non-git commands fall back to normal permission prompt ("ask").
+        for cmd in ["git status", "git commit -m 'safe'", "rm -rf /tmp/example"]:
+            with self.subTest(bypass=True, cmd=cmd):
+                res = _run_hook_subprocess(_make_payload(cmd, bypass_sandbox=True))
+                self.assertEqual(res, {"decision": "ask"})
+
+        # Sandboxed commands (BypassSandbox false or omitted) return "allow".
+        for bypass in (False, None):
+            for cmd in ["git status", "ls -la"]:
+                with self.subTest(bypass=bypass, cmd=cmd):
+                    res = _run_hook_subprocess(_make_payload(cmd, bypass_sandbox=bypass))
+                    self.assertEqual(res, {"decision": "allow"})
+
+        # Guarded git commands still return deny / force_ask even when BypassSandbox is true.
+        self.assertEqual(
+            _run_hook_subprocess(
+                _make_payload("git reset --hard", bypass_sandbox=True)
+            )["decision"],
+            "deny",
+        )
+        self.assertEqual(
+            _run_hook_subprocess(
+                _make_payload("git push origin main", bypass_sandbox=True)
+            )["decision"],
+            "force_ask",
+        )
 
     def test_direct_shebang_execution(self) -> None:
         res = _run_hook_subprocess(_make_payload("git reset --hard"), direct=True)
         self.assertEqual(res["decision"], "deny")
 
-    def test_cli_malformed_stdin_fails_open(self) -> None:
+    def test_cli_malformed_stdin_falls_back_to_ask(self) -> None:
         for bad_input in [
             "",
             "{not-valid-json",
@@ -122,7 +157,7 @@ class TestSubprocessContract(unittest.TestCase):
         ]:
             with self.subTest(bad_input=bad_input):
                 res = _run_hook_subprocess(bad_input)
-                self.assertEqual(res, {"decision": "allow"})
+                self.assertEqual(res, {"decision": "ask"})
 
     def test_non_run_command_tool_is_allowed(self) -> None:
         res = _run_hook_subprocess(

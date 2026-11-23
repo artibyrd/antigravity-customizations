@@ -13,7 +13,8 @@ An Antigravity `PreToolUse` lifecycle hook plugin that intercepts `run_command` 
 | **`deny`** *(hard block)* | **`git checkout .`**, `git checkout -- .`, `git checkout <ref> -- .`, `git checkout <ref> .` (and `./`, `:/`) | Discards all unstaged working-tree edits across the directory or repo. |
 | **`deny`** *(hard block)* | **`git restore .`**, `git restore --worktree .`, `git restore --staged --worktree .`, `git restore --source=<ref> .` (and `./`, `-W`, `-SW`, `:/`) | Discards all unstaged working-tree edits across the directory or repo. |
 | **`force_ask`** *(always prompt)* | **Standard non-force `git push`** | Always requires explicit user confirmation, bypassing cached "Always Allow" approvals. |
-| **`allow`** | Local `git commit`, `git add`, `git status`, `git diff`, `git log`, `git branch -d`, `git checkout -b ...`, `git checkout <branch>`, `git restore <specific-file>`, `git restore --staged .` (unstages without touching working tree), non-git commands, and malformed stdin payloads (fail-open) | Preserves smooth local development and prevents hook parser errors from bricking the session. |
+| **`allow`** *(sandboxed)* | Sandboxed (`BypassSandbox` false or omitted) safe local git commands (`git commit`, `git add`, `git status`, `git diff`, `git log`, `git branch -d`, `git checkout -b ...`, `git checkout <branch>`, `git restore <specific-file>`, `git restore --staged .`) and non-git commands | Keeps routine sandboxed development frictionless. |
+| **`ask`** *(sandbox-aware fallback)* | Unsandboxed (`BypassSandbox: true`) safe/non-git commands, or malformed/unparseable stdin payloads where sandbox status is unknown | Preserves Antigravity's normal permission prompt (and "Always Allow" cache) so the hook never auto-approves an unsandboxed command. |
 
 ### Shell & Flag Awareness
 
@@ -64,6 +65,10 @@ echo '{"toolCall":{"name":"run_command","args":{"CommandLine":"git push origin m
 echo '{"toolCall":{"name":"run_command","args":{"CommandLine":"git commit -m \"never run git reset --hard\""}}}' \
   | python3 ./hooks/guard_git.py
 # -> {"decision": "allow"}
+
+echo '{"toolCall":{"name":"run_command","args":{"CommandLine":"rm -rf /tmp/example","BypassSandbox":true}}}' \
+  | python3 ./hooks/guard_git.py
+# -> {"decision": "ask"}
 ```
 
 To run the full unit test suite from the repository root:
@@ -84,5 +89,5 @@ python3 -m unittest discover -s tests -v
 - **Classification:** `Combined (Original + mattpocock/skills)`
 - **Upstream Credit:** Destructive git command blocklist inspired by **Matt Pocock** ([`mattpocock/skills`](https://github.com/mattpocock/skills), `skills/misc/git-guardrails-claude-code`, MIT License, Copyright (c) 2026 Matt Pocock).
 - **What Changed for Antigravity & Workflow Policy:**
-  - **Native Antigravity architecture (Original):** Replaced Claude Code's setup-skill + `.claude/settings.json` + `jq`/regex bash script (`exit 2` + `stderr`) with a self-contained Antigravity plugin using plugin-root [`hooks.json`](./hooks.json) (`PreToolUse`, `run_command` matcher) and a stdlib-only Python 3 shell/git parser reading `toolCall.args.CommandLine` and emitting Antigravity JSON decisions (`allow`, `force_ask`, `deny`).
+  - **Native Antigravity architecture (Original):** Replaced Claude Code's setup-skill + `.claude/settings.json` + `jq`/regex bash script (`exit 2` + `stderr`) with a self-contained Antigravity plugin using plugin-root [`hooks.json`](./hooks.json) (`PreToolUse`, `run_command` matcher) and a stdlib-only Python 3 shell/git parser reading `toolCall.args.CommandLine` and emitting sandbox-aware Antigravity JSON decisions (`allow`, `ask`, `force_ask`, `deny`).
   - **Expanded parser accuracy & behavioral policy:** Preserved Matt's core destructive-git blocklist while adding support for git global flags, reordered/combined flags, `+` force-push refspecs, `git branch --delete --force`, worktree-mutating `git restore`, compound shell chains, and command substitutions—without false-blocking quoted commit messages or `echo` strings. Intentionally allows local `git commit` for fluid agentic workflows and gates standard non-force `git push` with Antigravity's `force_ask` confirmation instead of an unconditional hard block.

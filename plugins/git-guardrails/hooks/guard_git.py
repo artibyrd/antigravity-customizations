@@ -4,13 +4,17 @@
 Reads an Antigravity PreToolUse JSON payload from stdin, inspects
 ``toolCall.args.CommandLine``, and prints an Antigravity JSON decision:
 
-- ``deny``: destructive git operations (force push, ``git reset --hard``,
-  ``git clean -f``, ``git branch -D`` / ``--delete --force``,
-  ``git checkout .``, and worktree-mutating ``git restore .``).
-- ``force_ask``: standard non-force ``git push`` (always prompts the user,
-  ignoring cached approvals).
-- ``allow``: safe local git operations (including ``git commit``), non-git
-  commands, and fail-open fallback on malformed stdin payloads.
+- ``deny``: destructive git operations (force push / ``--mirror``,
+  ``git reset --hard``, ``git clean -f``, ``git branch -D`` /
+  ``--delete --force``, ``git checkout .``, and worktree-mutating
+  ``git restore .``).
+- ``force_ask``: standard non-force ``git push`` and deeply nested git commands
+  exceeding the recursion cap (always prompts the user, ignoring cached
+  approvals).
+- ``ask`` / ``allow`` (sandbox-aware pass-through): non-matching safe/non-git
+  commands return ``allow`` when sandboxed (``BypassSandbox`` false/omitted)
+  and ``ask`` when unsandboxed (``BypassSandbox`` truthy) or when stdin JSON is
+  malformed/unparseable so normal permission prompts are never bypassed.
 
 Zero third-party dependencies (Python 3.10+ stdlib only).
 """
@@ -1692,8 +1696,15 @@ def _evaluate_script(command_line: str, depth: int = 0) -> tuple[int, dict[str, 
 
 
 def pass_through_response(args: dict[str, object] | None = None) -> dict[str, str]:
-    """Return the hook decision for non-matching commands and fail-open fallbacks."""
-    _ = args
+    """Return the sandbox-aware decision for non-matching or malformed payloads.
+
+    - Malformed / unknown payload (``args is None``): ``{"decision": "ask"}``
+    - Unsandboxed command (``BypassSandbox`` truthy): ``{"decision": "ask"}``
+      so Antigravity's normal permission prompt / Always-Allow cache still runs
+    - Sandboxed command (``BypassSandbox`` false/omitted): ``{"decision": "allow"}``
+    """
+    if args is None or bool(args.get("BypassSandbox")):
+        return {"decision": "ask"}
     return dict(_ALLOW_RESULT)
 
 
@@ -1703,14 +1714,15 @@ def evaluate_command(
     """Return an Antigravity PreToolUse decision dict for ``command_line``."""
     severity, decision = _evaluate_script(command_line, depth=0)
     if severity == _SEV_ALLOW:
-        return pass_through_response(args)
+        return pass_through_response({} if args is None else args)
     return decision
 
 
 def handle_payload(raw_input: str) -> dict[str, str]:
     """Parse an Antigravity PreToolUse JSON payload and return a decision dict.
 
-    Fails open via ``pass_through_response()`` on malformed or non-object JSON.
+    Returns ``{"decision": "ask"}`` via ``pass_through_response()`` on malformed
+    or unparseable payloads so unsandboxed commands are never silently auto-approved.
     """
     try:
         payload = json.loads(raw_input)
@@ -1724,17 +1736,18 @@ def handle_payload(raw_input: str) -> dict[str, str]:
     if not isinstance(tool_call, dict):
         return pass_through_response()
 
+    args = tool_call.get("args")
+
     tool_name = tool_call.get("name", "")
     if isinstance(tool_name, str) and tool_name and tool_name != "run_command":
-        return pass_through_response()
+        return pass_through_response(args if isinstance(args, dict) else None)
 
-    args = tool_call.get("args")
     if not isinstance(args, dict):
         return pass_through_response()
 
     command_line = args.get("CommandLine")
     if not isinstance(command_line, str):
-        return pass_through_response(args)
+        return pass_through_response()
 
     return evaluate_command(command_line, args)
 
