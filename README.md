@@ -11,9 +11,23 @@ Every plugin in [`plugins/`](./plugins) is self-contained and intentionally scop
 
 ## Plugin Catalog
 
-| Plugin | Components | What It Does | Docs |
-| :--- | :--- | :--- | :--- |
-| **`plan-model-advisor`** | 1 Skill (`plan-model-advisor`) | Reviews an implementation plan before coding—first checking Antigravity's live model catalog and auto-refreshing its reference matrix if new models launched—then outputs a **Model & Swarm Execution Brief** with model/effort routing, over-engineering guardrails, cross-family review triggers, and `/teamwork` swarm rosters across `quality-first`, `balanced`, and `quota-saver` profiles. | [Plugin README](./plugins/plan-model-advisor/README.md) |
+Every plugin carries an explicit **Origin** label:
+* **`Original`** — Authored natively for Google Antigravity from our workflows.
+* **`Adapted (mattpocock/skills)`** — Translated from [Matt Pocock's `skills`](https://github.com/mattpocock/skills) (MIT License) for Antigravity's native plugin, skill, subagent, and hook conventions while preserving the core upstream workflow.
+* **`Combined (Original + mattpocock/skills)`** — Synthesizes concepts from `mattpocock/skills` with our own Antigravity patterns and guardrails; each plugin's `README.md` documents exactly what came from upstream vs. what was added or altered.
+
+| Plugin | Origin | Components | What It Does | Docs |
+| :--- | :--- | :--- | :--- | :--- |
+| **`plan-model-advisor`** | `Original` *(v1.2.0 adds slicing & explore-first notes inspired by `mattpocock/skills`)* | 1 Skill (`plan-model-advisor`) | Reviews an implementation plan before coding—auto-checking Antigravity's live model catalog, flagging ~150k context-window slicing opportunities, and outputting a **Model & Swarm Execution Brief** across `quality-first`, `balanced`, and `quota-saver` profiles. | [Plugin README](./plugins/plan-model-advisor/README.md) |
+| **`knowledge-governance`** | `Combined (Original + mattpocock/skills)` | 1 Skill (`knowledge-governance`) | Manages the 4-Tier Knowledge Taxonomy (`AGENTS.md` <800 tokens Class α/β/γ → Tier 1 Skills → optional review-only `CODING_STANDARDS.md` → Tier 2 Test Gates → Tier 3 Docs), the Demotion Highway, `/learn` Admission Gate, Living Invariants vs. Historical ADRs, and Matt Pocock's 7 retro diagnostic categories. | [Plugin README](./plugins/knowledge-governance/README.md) |
+| **`diagnosing-bugs`** | `Adapted (mattpocock/skills)` | 1 Skill (`diagnosing-bugs`) + HITL script | 6-phase disciplined loop for hard bugs and performance regressions: build a tight, red-capable feedback loop first → reproduce & minimise → 3–5 falsifiable hypotheses → `[DEBUG-xxxx]` probes → seam regression test → cleanup + `<REDACTED>` secret hygiene. | [Plugin README](./plugins/diagnosing-bugs/README.md) |
+| **`tdd`** | `Combined (Original + mattpocock/skills)` | 1 Skill (`tdd`) | Vertical-slice red-green-refactor TDD at pre-agreed public seams, banning implementation-coupled mocks, tautological assertions, and horizontal slicing—paired with hermetic offline testing guardrails. | [Plugin README](./plugins/tdd/README.md) |
+| **`code-review`** | `Combined (Original + mattpocock/skills)` | 1 Skill (`code-review`) | Runs two parallel fresh Antigravity subagents (`invoke_subagent`) over `git diff <fixed-point>...HEAD`: **Axis 1 (Standards + 12 Fowler Code Smells)** vs. **Axis 2 (Spec Fidelity + Reality-Check/Zero-Mock lens)**, reported side by side without merging or reranking. | [Plugin README](./plugins/code-review/README.md) |
+| **`git-guardrails`** | `Combined (Original + mattpocock/skills)` | 1 `PreToolUse` Hook (`hooks.json`) | Native Antigravity `PreToolUse` hook hard-blocking destructive git commands (`push --force`/`--mirror`, `reset --hard`, `clean -f`, `branch -D`, `checkout .`, `restore .`), `force_ask`-gating `git push`, allowing local `git commit`, and using a sandbox-aware `ask`/`allow` fallback. | [Plugin README](./plugins/git-guardrails/README.md) |
+
+### Planned Follow-On Waves
+* **Wave 2:** `writing-for-agents`, `architecture-review`, `pr-brief`, `bootstrap-approvals`, `session-handoff`.
+* **Wave 3:** `artifact-governance`, `reality-check-audit`, `domain-modeling`, `release-lifecycle`, `repo-bootstrap`, `workspace-hygiene-hooks`, `prototype`, `wizard`, plus an end-to-end **Agentic Pair Programming Protocol** guide showing how core and situational skills chain together.
 
 ---
 
@@ -93,17 +107,17 @@ Supported `plan-model-advisor` profiles:
 ```text
 antigravity-customizations/
 ├── plugins/                              # One subdirectory per installable plugin
-│   └── plan-model-advisor/
-│       ├── plugin.json                   # Official Antigravity manifest
-│       ├── README.md                     # Standalone plugin documentation
-│       └── skills/
-│           └── plan-model-advisor/
-│               ├── SKILL.md              # Progressive-disclosure instructions
-│               └── references/
-│                   └── model-matrix.md   # Easy-to-update model & swarm reference
+│   ├── plan-model-advisor/               # Model, effort, context-slicing & swarm advisor
+│   ├── knowledge-governance/             # 4-Tier taxonomy, Demotion Highway & retro checklist
+│   ├── diagnosing-bugs/                  # 6-phase red-loop debugging discipline + HITL script
+│   ├── tdd/                              # Vertical-slice seam TDD + hermetic testing
+│   ├── code-review/                      # Parallel 2-axis subagent review (Standards vs. Spec)
+│   └── git-guardrails/                   # Native PreToolUse hooks.json destructive-git guard
 ├── scripts/
-│   └── validate_customizations.py        # Zero-dependency manifest/skill/link checker
-├── .github/workflows/validate.yml        # Automated PR & push validation
+│   └── validate_customizations.py        # Zero-dependency manifest/skill/hook/link checker
+├── tests/
+│   └── test_git_guardrails.py            # Stdlib unittest suite for git-guardrails hook
+├── .github/workflows/validate.yml        # Automated PR & push validation + hook unit tests
 ├── Justfile                              # Local QA recipes (`just check`)
 ├── LICENSE                               # MIT
 └── README.md                             # You are here
@@ -133,9 +147,17 @@ python3 scripts/validate_customizations.py
 
 The GitHub Actions workflow ([`.github/workflows/validate.yml`](./.github/workflows/validate.yml)) runs automatically on every push to `main` and every pull request, verifying:
 * `plugin.json` JSON/JSONC validity, allowed top-level schema keys, kebab-case naming, global name uniqueness, and `suggestedPrompts` limits.
-* `SKILL.md` YAML frontmatter completeness, directory/name parity, and relative markdown link resolution.
-* Native plugin structure (`hooks.json` at plugin root) and zero leaked local filesystem paths.
-* Catalog parity between `plugins/` and this `README.md`.
+* `SKILL.md` YAML frontmatter completeness, directory/name parity, rejection of Claude Code–only frontmatter keys, and relative markdown link resolution (including `references/`).
+* Native plugin `hooks.json` placement and schema validity (rejecting misplaced `hooks/hooks.json` and verifying referenced local scripts exist) plus stdlib `unittest` coverage under `tests/`.
+* Zero leaked local filesystem paths and catalog parity between `plugins/` and this `README.md`.
+
+---
+
+## Credits & Upstream Attribution
+
+Several plugins in this repository are directly adapted from or combined with ideas from **[Matt Pocock's `skills`](https://github.com/mattpocock/skills)** (*Copyright (c) 2026 Matt Pocock*, released under the MIT License).
+
+Because `mattpocock/skills` targets Claude Code's conventions, every adapted or combined plugin here has been re-engineered for **Google Antigravity** (strict `name`/`description` frontmatter, standalone à la carte `plugin.json` packaging with zero global setup requirements, native `invoke_subagent`/`swarm` orchestration, and plugin-root `hooks.json` JSON contracts). Each plugin's individual `README.md` includes an **`Origin & Attribution`** section detailing exact upstream credits, mechanical Antigravity adaptations, and any behavioral additions or changes from our own workflows.
 
 ---
 
