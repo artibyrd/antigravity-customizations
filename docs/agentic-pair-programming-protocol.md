@@ -73,7 +73,7 @@ flowchart TD
   * **Hermetic Testing Boundary:** Keep tests fast, offline, and deterministic (pinned clocks, seeded RNG, isolated temp dirs, narrow in-memory fakes only at external system boundaries).
 * **Continuous Hook Guardrails (Always-On):**
   * **[`git-guardrails`](../plugins/git-guardrails/README.md) (`PreToolUse`):** Automatically intercepts `run_command` to **`deny`** destructive git commands (`push --force`/`--mirror`, `reset --hard`, `clean -f`, `branch -D`, `checkout .`, `restore .`), **`force_ask`** on every standard `git push`, **`allow`** routine sandboxed local commits/reads, and **`ask`** on unsandboxed non-git commands so cached approvals stay safe.
-  * **[`workspace-hygiene-hooks`](../plugins/workspace-hygiene-hooks/README.md) (`PostToolUse` + `Stop`):** Silently runs installed formatters (`ruff`, `prettier`, `gofmt`) on edited workspace files after writes (`PostToolUse`) and catches stray scratch scripts or log files left in the repo root before the agent finishes (`Stop`).
+  * **[`workspace-hygiene-hooks`](../plugins/workspace-hygiene-hooks/README.md) (`PostToolUse` + `Stop`):** Silently runs installed formatters (`ruff`, `prettier`, `gofmt`, `rustfmt`) on edited workspace files after writes (`PostToolUse`) and catches stray scratch scripts or log files left in the repo root before the agent finishes (`Stop`).
 
 **Exit criteria:** All slices green at real seams, local QA (`just check` / test suite) passes, and working tree is clean on a feature branch.
 
@@ -103,7 +103,7 @@ flowchart TD
 **Goal:** Ship cleanly with repeatable release hygiene, then feed hard-won lessons into the lowest-cost tier so the next session starts smarter without bloating agent context.
 
 * **4-Phase Delivery Cadence ([`release-lifecycle`](../plugins/release-lifecycle/README.md)):**
-  * Guides **Phase 1 (Local QA)** → **Phase 2 (Branch/PR & Dev Probe)** → **Phase 3 (Mk1 Eyeball Sign-Off & Feature Release)** → **Phase 4 (`/learn` Retrospective & Lean Patch Release)**.
+  * Guides **Phase 1 (Local QA → Branch/PR & Dev Probe → Mk1 Eyeball Sign-Off)** → **Phase 2 (Feature Version Release)** → **Phase 3 (`/learn` Retrospective)** → **Phase 4 (Lean Patch Release)**.
   * Maintains `CHANGELOG.md` (what shipped) vs. `ROADMAP.md` (what remains) symmetry, degrades cleanly via **self-contained graceful preflight** when `gh` or CI/CD workflows are absent, and enforces **Topological Multi-Repo PR Merge Order** (merge upstream contract/content repos before downstream deploy pipelines that consume them).
 * **Continuous Learning & Demotion (Native `/learn` + [`knowledge-governance`](../plugins/knowledge-governance/README.md)):**
   * Run a session retrospective across the **7 diagnostic categories** (`Navigation`, `Automated checks`, `Coding standards`, `Global AGENTS.md`, `Tool economy`, `No-ops`, `Information access`), ranked by severity.
@@ -130,7 +130,7 @@ Reach for these **9 situational plugins** whenever a specific symptom appears—
 | Bootstrapping a brand-new repository that lacks `AGENTS.md`, `Justfile`, `GLOSSARY.md`, or governance tests | [`repo-bootstrap`](../plugins/repo-bootstrap/README.md) | **Day 0** (optional, never required) | Probes local tool readiness (`git`, `gh`, `just`, `python3`, linters) and scaffolds only the governance files you opt into without overwriting existing files. |
 | Authoring, auditing, or pruning a `SKILL.md`, `plugin.json`, `AGENTS.md`, or `hooks.json` | [`writing-for-agents`](../plugins/writing-for-agents/README.md) | **Stage 5** (or plugin authoring) | Applies precision prompt craft (context pointers, leading words, anti-negation, no-op hunting, pruning) alongside Antigravity's exact manifest, frontmatter, root `hooks.json`, and `<800`-token rules. |
 | Uncertain UX flow or tricky state-machine logic that is faster to feel interactively than debate in prose | [`prototype`](../plugins/prototype/README.md) | **Stage 1** (during `/grill-me`) | Builds a throwaway single-file HTML logic prototype or toggleable UI variations via Antigravity Artifacts / `generative_ui` to settle design questions before implementation. |
-| Feature requires human-only provisioning, third-party dashboard clicks, CI secrets, or a one-off production cutover | [`wizard`](../plugins/wizard/README.md) | **Stage 3 or Stage 5** (ops handoff) | Generates an interactive bash runbook wizard (`read -rs` secret hygiene, step verification, resumable checkpoints) walking a human safely through steps agents cannot execute. |
+| Feature requires human-only provisioning, third-party dashboard clicks, CI secrets, or a one-off production cutover | [`wizard`](../plugins/wizard/README.md) | **Stage 3 or Stage 5** (ops handoff) | Generates an interactive bash runbook wizard (`[y/N]` confirm gates, silent `read -rs` secret prompts, idempotent `0600` `.env` upserts remembered across re-runs, `gh` secret/variable writes with fallback, and a closing summary of remaining manual steps) walking a human safely through steps agents cannot execute. |
 
 ---
 
