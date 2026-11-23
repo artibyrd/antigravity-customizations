@@ -1,0 +1,20 @@
+{
+  "name": "knowledge-governance",
+  "displayName": "Knowledge Governance",
+  "version": "1.0.0",
+  "description": "Governs agent context economy with a 4-tier knowledge placement taxonomy (<800-token AGENTS.md), the Demotion Highway, the /learn Admission Gate, Invariant Challenger audits, Living Invariants vs. Historical ADRs, and 7-category session retrospectives.",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Audit AGENTS.md for context bloat and identify Demotion Highway candidates",
+    "Route these /learn findings through the 4-tier Knowledge Admission Gate",
+    "Run a session retrospective across the 7 diagnostic categories ranked by severity"
+  ]
+}

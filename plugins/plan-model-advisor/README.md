@@ -7,6 +7,7 @@ An Antigravity plugin that reviews your implementation plans before you write co
 - **Self-updating model catalog:** Runs a read-only preflight check against Antigravity's live model list before scoring your plan—if new models or effort tiers have launched (or older ones were retired), it researches the changes and refreshes `references/model-matrix.md` automatically before making recommendations.
 - **Stop guessing effort tiers:** Know when `Gemini 4 Carbon (High)` or `Gemini 4 Neon (XHigh)` is actually worth it vs. when `Orchestrator (Neon)` or `Gemini 4 Hydrogen` is the smarter call.
 - **Prevent frontier over-engineering:** Automatically flags surgical or verbatim steps where heavy reasoning models tend to be *too* helpful and refactor out-of-scope code.
+- **Context-window slicing & explore-first discipline (v1.2.0):** Resolves factual questions from the codebase instead of asking the user, flags oversized monolithic phases (>~150k tokens) for vertical tracer-bullet slicing, and structures swarms around a task-graph frontier with sparse context pointers.
 - **Right-size swarms (`/teamwork`):** Recommends single-agent vs. a 2-worker adversarial swarm vs. a parallel multi-worker swarm—complete with non-overlapping ownership, workspace modes (`share`/`inherit`), and a ready-to-paste launch prompt that pins per-worker models.
 - **Adapt to your subscription tier:** Supports three optimization profiles (`quality-first`, `balanced`, `quota-saver`) without hardcoding anyone's personal defaults.
 
@@ -39,3 +40,10 @@ You can always override it in any prompt (e.g., *"Review this plan using the `ba
 All model IDs, benchmark notes, and swarm patterns live in [`skills/plan-model-advisor/references/model-matrix.md`](./skills/plan-model-advisor/references/model-matrix.md). At the start of each review, the skill compares the **Tracked Model Catalog** against Antigravity's live model list (`swarm{action:"models", all:true}`):
 - If the catalog matches, it skips web research and goes straight to reviewing your plan.
 - If new models or effort tiers appear (or recommended models are retired), it researches the delta, updates `model-matrix.md` in place (without auto-committing), and bases its recommendations on the refreshed catalog.
+
+## Origin & Attribution
+
+- **Provenance:** `Combined (Original + mattpocock/skills)` *(Original Antigravity plugin, enhanced in v1.2.0 with workflow concepts from [`mattpocock/skills`](https://github.com/mattpocock/skills))*
+- **Upstream Credit:** Concepts for explore-first fact gathering, vertical tracer-bullet context slicing, task-graph frontiers, and sparse context pointers are adapted from **Matt Pocock** ([`mattpocock/skills`](https://github.com/mattpocock/skills): `skills/engineering/implement-spec`, `skills/engineering/to-tickets`, and `skills/productivity/grilling`), MIT License, Copyright (c) 2026 Matt Pocock.
+- **Antigravity Adaptations:** Translated Claude Code subagent/worktree/tracker-ticket concepts onto Antigravity's native `swarm` (`/teamwork`) workspace modes (`inherit`, `share`, `branch`), live model catalog preflight (`swarm{action:"models", all:true}`), and standalone `SKILL.md` / `references/model-matrix.md` progressive disclosure with zero issue-tracker or cross-plugin dependencies.
+- **Original Additions & Synthesis:** The core plugin—including optimization profiles (`quality-first`, `balanced`, `quota-saver`), the live self-updating Gemini 4 / Claude model matrix, risk-dimension scoring, Orchestrator safety guardrails, over-engineering watchouts, and per-worker model-pinned launch prompts—is original to this repository.

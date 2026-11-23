@@ -1,7 +1,7 @@
 {
   "name": "plan-model-advisor",
   "displayName": "Plan Model Advisor",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Reviews implementation plans and recommends optimal Antigravity model settings, thinking effort levels, cross-family adversarial reviews, and swarm configurations tailored to your risk and quota profile.",
   "author": {
     "name": "Arthur Davis",

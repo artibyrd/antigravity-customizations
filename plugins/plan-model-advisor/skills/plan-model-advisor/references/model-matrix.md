@@ -75,5 +75,6 @@ Swarms are **quota-heavy** and introduce coordination overhead; use them only wh
 ### Swarm Guardrails
 - **Zero File Overlap:** Never assign two concurrent authors to the same file. Split by repo, subsystem, or interface boundary.
 - **Prerequisites First:** Shared schemas, core domain models, and interface contracts must land before parallel workers fan out.
+- **Context-Window Slicing & Sparse Briefs:** Size each worker's assignment to a bite-sized vertical slice (~150k-token working budget) drawn from the ready task-graph frontier, and pass sparse context pointers (plan paths, file paths, commit SHAs, ADRs) instead of pasting long prose into briefs.
 - **Explicit Model Pinning:** Antigravity swarm coordinators default every worker to the coordinator's model unless the user explicitly specifies per-worker models—always provide a ready-to-paste launch instruction naming the exact model pins.
 - **Verifier Discipline:** Verifiers inspect diffs, run test/governance gates, and `@mention` the author with findings; they never edit the author's files directly.

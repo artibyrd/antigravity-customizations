@@ -1,0 +1,20 @@
+{
+  "name": "code-review",
+  "displayName": "Code Review",
+  "version": "1.0.0",
+  "description": "Parallel two-axis diff review using fresh Antigravity subagents: Axis 1 checks repo standards (including optional CODING_STANDARDS.md) plus 12 Fowler code smells; Axis 2 checks spec fidelity plus a Reality-Check / Zero-Mock lens. Reports both axes separately without merging or reranking.",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Review my changes since main along both Standards and Spec axes",
+    "Run a two-axis code review since HEAD~3 against implementation_plan.md",
+    "Audit this branch diff for Fowler code smells and hardcoded mocks or fallbacks"
+  ]
+}

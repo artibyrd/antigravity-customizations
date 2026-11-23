@@ -1,0 +1,20 @@
+{
+  "name": "diagnosing-bugs",
+  "displayName": "Diagnosing Bugs",
+  "version": "1.0.0",
+  "description": "6-phase disciplined diagnosis loop for hard bugs and performance regressions: build a tight red-capable feedback loop first, reproduce and minimise, rank 3-5 falsifiable hypotheses, instrument with [DEBUG-xxxx] probes, lock down a seam regression test, and clean up.",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Diagnose this failing behavior by building a tight red-capable feedback loop first",
+    "Debug this intermittent flake and raise its reproduction rate before hypothesising",
+    "Diagnose this performance regression with a baseline timing harness and bisection"
+  ]
+}

@@ -1,0 +1,62 @@
+---
+name: tdd
+description: >-
+  Vertical-slice test-driven development at pre-agreed public seams with
+  hermetic offline testing boundaries. Use when the user wants to build
+  features or fix bugs test-first, mentions "TDD" or "red-green-refactor", or
+  asks for seam-based integration tests.
+---
+
+# Test-Driven Development
+
+TDD is the **red → green** loop. This skill governs what makes every cycle produce tests worth keeping: observable behavior, pre-agreed seams, hermetic boundaries, anti-patterns to reject, and loop discipline. Apply every section before and during the loop—not after.
+
+When exploring the codebase, read `GLOSSARY.md` (if present) so test names and interface vocabulary match the domain language, and respect any `docs/adr/` decisions in the area you touch; skip quietly if neither exists.
+
+---
+
+## 1. What a Good Test Is
+
+Tests verify **observable behavior through public interfaces**, never internal structure. Code can be rewritten completely while behavior stays intact; good tests survive refactors untouched. A good test reads like a specification (`"user can checkout with valid cart"`) rather than a wiring diagram.
+
+Read [references/tests.md](./references/tests.md) for concrete good/bad examples and [references/mocking.md](./references/mocking.md) for boundary-mocking guidelines.
+
+---
+
+## 2. Seams: Where Tests Go
+
+A **seam** is the public boundary where you observe behavior without reaching inside—callers and tests cross the same interface. Tests live at seams, never against private internals.
+
+**Test only at pre-agreed seams.** Before writing any test, list the proposed seams and confirm them with the user. Do not write tests against unconfirmed seams. Agreeing on seams up front focuses effort on critical paths and complex logic rather than low-value noise.
+
+For each proposed seam, include a one-line note on **what it catches** and **what it misses**, and ask: *"What is the public interface, and which seams should we test?"*
+
+When the interface shape itself is unclear, check three design invariants before writing the first test:
+- **Depth over pass-throughs:** A deep module hides complexity behind a small, caller-friendly interface; if a test has to reach past the interface to assert behavior, the seam is in the wrong place.
+- **Real variance:** Introduce an adapter seam only when something genuinely varies across it (e.g., production gateway vs. in-memory fake), not for hypothetical future swaps.
+- **Pure return values & injected dependencies:** Accept external dependencies as parameters and return explicit results instead of mutating hidden state.
+
+---
+
+## 3. Hermetic Testing Boundary
+
+Keep unit and seam tests **fast, deterministic, and offline**:
+- **Deterministic by construction:** Pin clocks, seed RNG, isolate temporary directories, and prefer real in-memory stores or local test databases over network services.
+- **Zero internal mocking:** Never mock your own modules or internal collaborators. Exercise real local boundaries whenever they can run locally and deterministically.
+- **Boundary-only doubles:** Inject narrow, SDK-style adapters strictly at true external system boundaries (third-party HTTP APIs, payment/email providers, LLM endpoints, non-deterministic clocks). Never replace core domain logic under test with hardcoded synthetic stubs.
+
+---
+
+## 4. Anti-Patterns to Reject
+
+- **Implementation-coupled:** Mocks internal collaborators, invokes private methods, asserts call counts/order, or verifies via a side channel (querying internal DB tables instead of calling the public read interface). *Tell:* the test breaks during a behavior-preserving refactor.
+- **Tautological:** Recomputes the expected value using the same formula as the production code (`expect(add(a, b)).toBe(a + b)` or mirroring logic in the test), so it passes by construction. Expected values must come from an independent source of truth: a known-good literal, a worked example, or the specification.
+- **Horizontal slicing:** Writing all tests upfront, then writing all implementation. Bulk upfront tests assert *imagined* shapes instead of real behavior and lock in rigid structure before learning from the code. Use **vertical slices** instead: one failing test → one minimal implementation → repeat, letting each tracer-bullet cycle inform the next.
+
+---
+
+## 5. Rules of the Loop
+
+- **Red before green:** Write one failing test first, run it to observe the expected failure, then write only enough production code to make it pass. Do not anticipate future tests or add speculative abstractions.
+- **One slice at a time:** One agreed seam, one behavior, one minimal implementation per cycle.
+- **Keep refactoring in the review stage:** Do not interleave speculative refactors into the red → green cycle—address structural cleanup during the dedicated review stage once behavior is locked green.
