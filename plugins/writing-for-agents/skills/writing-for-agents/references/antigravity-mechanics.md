@@ -55,6 +55,18 @@ In Antigravity, every skill carries a `description` for discovery, while explici
 - **Splitting by invocation:** Split out a separate skill only when a distinct leading word or workflow branch genuinely warrants independent activation and earns its always-loaded description tokens.
 - **Standalone / à la carte packaging:** Never instruct an agent to cross-invoke another optional plugin's skill as a hard dependency. Bundle shared reference files inside `references/` (or link to an external repo doc) so every plugin works standalone out of the box.
 
+### Project-Specific Skill Overlays (`.agents/overrides/<skill-name>.md`)
+
+When a repository needs to tighten, extend, or disable parts of a generalized skill without shadowing or forking the upstream plugin:
+
+- **Location & Naming:** Place a plain Markdown file at `.agents/overrides/<skill-name>.md` (matching the skill's kebab-case `name`). Never name it `SKILL.md`—doing so registers a competing skill that shadows the upstream plugin and blocks updates.
+- **Zero Always-On Cost:** Because `.agents/overrides/` is not indexed into the always-loaded skill catalog, overlays consume **0 tokens** until the target skill activates.
+- **3-Section Delta Contract:** Structure every overlay as self-contained, harness-agnostic Markdown (readable both as a skill overlay and as a standalone project guide on non-Antigravity harnesses):
+  - `## Overrides` — Base-skill thresholds or defaults this repository tightens, relaxes, or replaces.
+  - `## Extensions` — Repository-specific invariants, commands, scripts, or extra verification gates.
+  - `## Disabled / Not Applicable` — Optional base-skill steps or artifacts skipped in this repository.
+- **Two-Layer Discovery:** Customizable upstream skills include a 1-line preflight note checking `.agents/overrides/<skill-name>.md`, and repositories add a 1-line pointer in `AGENTS.md` directing agents to check `.agents/overrides/<skill>.md` before running generalized workflows.
+
 ---
 
 ## 3. Plugin Manifest (`plugin.json`)

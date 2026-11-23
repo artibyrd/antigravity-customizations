@@ -15,6 +15,8 @@ Actively build and sharpen the project's domain model as you design. This is an 
 
 > **Pairs with native `/grill-me`:** During interactive design sessions, use Antigravity's native `/grill-me` workflow to interview through open design decisions while applying this skill to lock down ubiquitous language in `GLOSSARY.md` and gate Historical ADRs.
 
+> **Project overlay (optional):** If `.agents/overrides/domain-modeling.md` exists in the workspace or repository root, read it first and apply its `Overrides`, `Extensions`, and `Disabled / Not Applicable` deltas on top of this skill.
+
 ---
 
 ## 1. Explore First, Ask Second

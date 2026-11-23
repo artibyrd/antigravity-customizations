@@ -14,6 +14,8 @@ Routes operational discoveries, rules, and retrospective findings into the lowes
 
 When conducting a session retrospective or environment audit, read [references/retro-checklist.md](./references/retro-checklist.md) for the 7 diagnostic categories and severity-ranking workflow.
 
+> **Project overlay (optional):** If `.agents/overrides/knowledge-governance.md` exists in the workspace or repository root, read it first and apply its `Overrides`, `Extensions`, and `Disabled / Not Applicable` deltas on top of this skill.
+
 ---
 
 ## 1. The 4-Tier Knowledge Placement Taxonomy

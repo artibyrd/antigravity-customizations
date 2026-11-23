@@ -13,6 +13,8 @@ description: >-
 
 Protects institutional memory and repository hygiene across long-running sessions by classifying every document's mutability, preventing accidental overwrites of cumulative plan ledgers, keeping temporary scripts isolated, and grounding research notes in primary sources.
 
+> **Project overlay (optional):** If `.agents/overrides/artifact-governance.md` exists in the workspace or repository root, read it first and apply its `Overrides`, `Extensions`, and `Disabled / Not Applicable` deltas on top of this skill.
+
 ---
 
 ## 1. Document Lifecycle Taxonomy & Badges

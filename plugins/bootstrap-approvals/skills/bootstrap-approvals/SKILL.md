@@ -13,6 +13,8 @@ description: >-
 
 Primes Antigravity IDE command approvals in a fresh workspace or after permissions reset—without hardcoding repo-specific commands or ever priming destructive or overly broad prefixes.
 
+> **Project overlay (optional):** If `.agents/overrides/bootstrap-approvals.md` exists in the workspace or repository root, read it first and apply its `Overrides`, `Extensions`, and `Disabled / Not Applicable` deltas on top of this skill.
+
 ---
 
 ## 1. The Subprocess Isolation Rule

@@ -293,6 +293,27 @@ Built-in `plan-model-advisor` profiles (specific model names below are Antigravi
 
 ---
 
+## Tailoring Skills Per Repository (Project Overlays)
+
+To adapt a generalized skill to a specific repository's conventions **without** shadowing or forking the upstream plugin, create a plain Markdown overlay at `.agents/overrides/<skill-name>.md` in the target repository (never named `SKILL.md`, so it stays at **0 always-on tokens** and never shadows upstream updates):
+
+```markdown
+# <Skill Name> — <Repo> Project Overlay
+
+## Overrides
+<!-- Specific defaults or thresholds in the base skill that this repo tightens, relaxes, or replaces. -->
+
+## Extensions
+<!-- Repo-specific invariants, commands, scripts, or extra verification gates added to the workflow. -->
+
+## Disabled / Not Applicable
+<!-- Optional base-skill steps or artifacts skipped in this repo. -->
+```
+
+Customizable core skills (`architecture-review`, `artifact-governance`, `bootstrap-approvals`, `code-review`, `domain-modeling`, `knowledge-governance`, `pr-brief`, `release-lifecycle`, and `tdd`) automatically check `.agents/overrides/<skill-name>.md` on activation and proceed cleanly when no overlay exists. Keeping overlays self-contained in pure Markdown under `.agents/` also ensures they remain readable as standalone project guides on other agent harnesses (Claude Code, Cursor, Codex).
+
+---
+
 ## Repository Architecture
 
 *For contributors and plugin authors (skip this section if you only want to install and use plugins):*

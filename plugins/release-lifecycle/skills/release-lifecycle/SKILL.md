@@ -14,6 +14,8 @@ description: >-
 
 Delivers features cleanly and turns every release boundary into a structured improvement loop—without assuming any specific CI platform, issue tracker, or cloud host.
 
+> **Project overlay (optional):** If `.agents/overrides/release-lifecycle.md` exists in the workspace or repository root, read it first and apply its `Overrides`, `Extensions`, and `Disabled / Not Applicable` deltas on top of this skill.
+
 ---
 
 ## 1. Self-Contained Graceful Preflight (Always Run First)

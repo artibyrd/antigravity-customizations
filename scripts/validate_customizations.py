@@ -62,6 +62,7 @@ LOCAL_PATH_PATTERNS = [
     re.compile(r"[A-Za-z]:\\Users\\[A-Za-z0-9._-]+\\"),
 ]
 MD_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
+OVERLAY_REF_RE = re.compile(r"\.agents/overrides/([a-z0-9-]+)\.md")
 
 
 def strip_jsonc_comments(text: str) -> str:
@@ -332,6 +333,12 @@ def validate_plugin(plugin_dir: Path, seen_names: dict[str, Path], errors: list[
                 )
             if not skill_desc.strip():
                 errors.append(f"{skill_md.relative_to(REPO_ROOT)}: frontmatter 'description' is required")
+            skill_text = skill_md.read_text(encoding="utf-8")
+            for overlay_target in OVERLAY_REF_RE.findall(skill_text):
+                if overlay_target != skill_dir.name:
+                    errors.append(
+                        f"{skill_md.relative_to(REPO_ROOT)}: overlay reference '.agents/overrides/{overlay_target}.md' does not match skill name '{skill_dir.name}'"
+                    )
             check_relative_links(skill_md, errors)
             refs_dir = skill_dir / "references"
             if refs_dir.is_dir():
