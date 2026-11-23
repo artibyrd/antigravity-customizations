@@ -1,0 +1,20 @@
+{
+  "name": "writing-for-agents",
+  "displayName": "Writing for Agents",
+  "version": "1.0.0",
+  "description": "Prompt-craft and Antigravity packaging reference for authoring skills, plugins, AGENTS.md, and hooks.json: context pointers, context vs. cognitive load, information hierarchy, completion criteria, leading words, anti-negation, no-op hunting, anti-sediment pruning, and Antigravity loader guardrails.",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Audit and prune this SKILL.md for no-ops, negations, and bloated context pointers",
+    "Help me author a new Antigravity plugin with progressive disclosure and valid hooks.json",
+    "Review our AGENTS.md against the 800-token ceiling and information hierarchy"
+  ]
+}

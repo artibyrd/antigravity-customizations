@@ -1,0 +1,20 @@
+{
+  "name": "architecture-review",
+  "displayName": "Architecture Review",
+  "version": "1.0.0",
+  "description": "Surveys codebase hotspots for Ousterhout deep-module deepening opportunities, harmonizes deep interfaces with a ~500 LOC soft internal decomposition trigger, presents visual before/after Antigravity Markdown Artifacts, runs parallel Design-It-Twice subagents, and enforces operational, DOM-safety, and browser-verification guardrails.",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Survey recent git hotspots for deep-module refactoring candidates and produce a visual artifact",
+    "Run Design It Twice with parallel subagents to compare interface designs for this module",
+    "Audit our Justfile, web UI, and browser tests against operational and DOM-safety guardrails"
+  ]
+}
