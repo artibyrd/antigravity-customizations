@@ -1,0 +1,20 @@
+{
+  "name": "artifact-governance",
+  "displayName": "Artifact Governance",
+  "version": "1.0.0",
+  "description": "Governs Living Document vs. Historical Artifact lifecycles, enforces the Append-Only Ledger Protocol for implementation_plan.md and walkthrough.md with transcript_full.jsonl recovery, keeps scratch scripts clean, and captures cited primary-source research notes.",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Append the next milestone to implementation_plan.md using the Append-Only Ledger Protocol",
+    "Classify our active artifacts into Living Documents vs. Historical Artifacts with badges",
+    "Research this API against primary sources and save cited Markdown notes"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "name": "reality-check-audit",
+  "displayName": "Reality Check Audit",
+  "version": "1.0.0",
+  "description": "Runs a structured, evidence-backed cross-model 'Outsider's Honest Assessment' across a repository, milestone, dashboard, or docs suite—hunting mocked/hardcoded telemetry, doc-vs-code drift, and governance bloat—formatted as What's Genuinely Good, What's Concerning, What's Aspirational vs. Real, and Concrete Remediation Plans.",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Run a reality-check-audit across this repository and separate shipped reality from aspirational claims",
+    "Give me an Outsider's Honest Assessment hunting mocked telemetry, doc drift, and governance bloat",
+    "Audit our docs and dashboard against the actual codebase and draft concrete remediation plans"
+  ]
+}

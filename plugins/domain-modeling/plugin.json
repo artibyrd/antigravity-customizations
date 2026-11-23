@@ -1,0 +1,20 @@
+{
+  "name": "domain-modeling",
+  "displayName": "Domain Modeling",
+  "version": "1.0.0",
+  "description": "Actively sharpens a project's ubiquitous language and architectural boundaries with lazy inline GLOSSARY.md (and multi-context GLOSSARY-MAP.md) maintenance, a 3-criteria Historical ADR gate separated from Living Invariants, and an explore-first habit designed to pair with Antigravity's native /grill-me.",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Sharpen our domain terms against the codebase and update GLOSSARY.md inline",
+    "Check whether this architectural trade-off passes the 3-criteria Historical ADR gate",
+    "Pair domain-modeling with /grill-me to stress-test our bounded contexts and terminology"
+  ]
+}

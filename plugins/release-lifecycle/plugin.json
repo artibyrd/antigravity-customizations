@@ -1,0 +1,20 @@
+{
+  "name": "release-lifecycle",
+  "displayName": "Release Lifecycle",
+  "version": "1.0.0",
+  "description": "Guides a 4-phase delivery and continuous learning release cadence (Local QA, PR/Dev Probe, Mk1 Eyeball Sign-Off, Feature Release, /learn Retrospective, Lean Patch Release) with Self-Contained Graceful Preflight, CHANGELOG.md vs. ROADMAP.md symmetry, and Topological Multi-Repo PR Merge Order.",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Run release-lifecycle preflight on this repo and prepare our Mk1 Eyeball sign-off package",
+    "Check CHANGELOG.md vs. ROADMAP.md symmetry and version manifest parity for this release",
+    "Plan the topological multi-repo PR merge order across our upstream and downstream repos"
+  ]
+}
