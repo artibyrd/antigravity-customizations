@@ -37,7 +37,25 @@ ALLOWED_PLUGIN_KEYS = {
 }
 
 ALLOWED_LOGO_EXTS = {".png", ".svg", ".jpg", ".jpeg", ".webp"}
+ALLOWED_HOOK_EVENTS = {
+    "SessionStart",
+    "PreToolUse",
+    "PostToolUse",
+    "PreInvocation",
+    "PostInvocation",
+    "Stop",
+}
+TOOL_HOOK_EVENTS = {"PreToolUse", "PostToolUse"}
+DISALLOWED_CLAUDE_FRONTMATTER_KEYS = {
+    "disable-model-invocation",
+    "user-invocable",
+    "argument-hint",
+    "context",
+    "agent",
+    "allowed-tools",
+}
 KEBAB_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+REL_SCRIPT_RE = re.compile(r"(?:^|\s)(\./[^\s\"';|&]+)")
 LOCAL_PATH_PATTERNS = [
     re.compile(r"/home/[A-Za-z0-9._-]+/"),
     re.compile(r"/Users/[A-Za-z0-9._-]+/"),
@@ -142,6 +160,66 @@ def check_relative_links(md_path: Path, errors: list[str]) -> None:
             )
 
 
+def validate_hooks_json(plugin_dir: Path, hooks_path: Path, errors: list[str]) -> None:
+    rel = hooks_path.relative_to(REPO_ROOT)
+    try:
+        data = json.loads(strip_jsonc_comments(hooks_path.read_text(encoding="utf-8")))
+    except json.JSONDecodeError as exc:
+        errors.append(f"{rel}: invalid JSON/JSONC ({exc})")
+        return
+
+    if not isinstance(data, dict) or not data:
+        errors.append(f"{rel}: root must be a non-empty JSON object mapping hook names to configs")
+        return
+
+    def check_handler(hook_name: str, event: str, handler: object) -> None:
+        if not isinstance(handler, dict):
+            errors.append(f"{rel}: {hook_name}.{event} handler must be an object")
+            return
+        cmd = handler.get("command")
+        if not isinstance(cmd, str) or not cmd.strip():
+            errors.append(f"{rel}: {hook_name}.{event} handler missing non-empty 'command'")
+            return
+        for match in REL_SCRIPT_RE.finditer(cmd):
+            script_rel = match.group(1)
+            script_path = (plugin_dir / script_rel).resolve()
+            if not script_path.is_file():
+                errors.append(f"{rel}: {hook_name}.{event} references missing script '{script_rel}'")
+
+    for hook_name, cfg in data.items():
+        if not isinstance(cfg, dict):
+            errors.append(f"{rel}: hook '{hook_name}' must be an object")
+            continue
+        unknown = sorted(set(cfg.keys()) - ALLOWED_HOOK_EVENTS - {"enabled"})
+        if unknown:
+            errors.append(f"{rel}: hook '{hook_name}' has unknown key(s): {', '.join(unknown)}")
+        if "enabled" in cfg and not isinstance(cfg["enabled"], bool):
+            errors.append(f"{rel}: hook '{hook_name}.enabled' must be a boolean")
+        for event in ALLOWED_HOOK_EVENTS:
+            if event not in cfg:
+                continue
+            entries = cfg[event]
+            if not isinstance(entries, list):
+                errors.append(f"{rel}: {hook_name}.{event} must be a list")
+                continue
+            if event in TOOL_HOOK_EVENTS:
+                for group in entries:
+                    if not isinstance(group, dict):
+                        errors.append(f"{rel}: {hook_name}.{event} entries must be matcher group objects")
+                        continue
+                    if "matcher" not in group or not isinstance(group["matcher"], str):
+                        errors.append(f"{rel}: {hook_name}.{event} group missing string 'matcher'")
+                    handlers = group.get("hooks")
+                    if not isinstance(handlers, list) or not handlers:
+                        errors.append(f"{rel}: {hook_name}.{event} group must have non-empty 'hooks' list")
+                        continue
+                    for h in handlers:
+                        check_handler(hook_name, event, h)
+            else:
+                for h in entries:
+                    check_handler(hook_name, event, h)
+
+
 def check_local_path_leaks(plugin_dir: Path, errors: list[str]) -> None:
     for path in plugin_dir.rglob("*"):
         if not path.is_file():
@@ -220,6 +298,11 @@ def validate_plugin(plugin_dir: Path, seen_names: dict[str, Path], errors: list[
             f"{rel}: hooks/hooks.json is ignored by native plugin discovery; move to {rel}/hooks.json"
         )
 
+    # Validate plugin-root hooks.json if present
+    root_hooks = plugin_dir / "hooks.json"
+    if root_hooks.is_file():
+        validate_hooks_json(plugin_dir, root_hooks, errors)
+
     # Validate bundled skills
     skills_dir = plugin_dir / "skills"
     if skills_dir.is_dir():
@@ -232,6 +315,11 @@ def validate_plugin(plugin_dir: Path, seen_names: dict[str, Path], errors: list[
             if fm is None:
                 errors.append(f"{skill_md.relative_to(REPO_ROOT)}: missing or unclosed YAML frontmatter")
                 continue
+            leaked_claude_keys = sorted(set(fm.keys()) & DISALLOWED_CLAUDE_FRONTMATTER_KEYS)
+            if leaked_claude_keys:
+                errors.append(
+                    f"{skill_md.relative_to(REPO_ROOT)}: Claude Code-specific frontmatter key(s) not supported by Antigravity: {', '.join(leaked_claude_keys)}"
+                )
             skill_name = fm.get("name", "")
             skill_desc = fm.get("description", "")
             if not KEBAB_RE.match(skill_name):
@@ -245,6 +333,10 @@ def validate_plugin(plugin_dir: Path, seen_names: dict[str, Path], errors: list[
             if not skill_desc.strip():
                 errors.append(f"{skill_md.relative_to(REPO_ROOT)}: frontmatter 'description' is required")
             check_relative_links(skill_md, errors)
+            refs_dir = skill_dir / "references"
+            if refs_dir.is_dir():
+                for ref_md in sorted(refs_dir.rglob("*.md")):
+                    check_relative_links(ref_md, errors)
 
     # Check links in plugin README.md if present
     plugin_readme = plugin_dir / "README.md"

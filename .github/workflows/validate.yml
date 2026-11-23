@@ -19,3 +19,9 @@ jobs:
 
       - name: Validate plugin manifests, skills, links, and catalog parity
         run: python3 scripts/validate_customizations.py
+
+      - name: Run hook and script unit tests
+        run: |
+          if [ -d tests ]; then
+            python3 -m unittest discover -s tests -v
+          fi

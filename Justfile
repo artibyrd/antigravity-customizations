@@ -4,12 +4,20 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 default:
     @just --list
 
-# Run full local validation (Python checks + strict agy CLI plugin validation if installed)
-check: validate-py validate-agy
+# Run full local validation (Python checks + hook unit tests + strict agy CLI plugin validation if installed)
+check: validate-py test-hooks validate-agy
 
 # Run zero-dependency Python customization validator (same check run in GitHub Actions)
 validate-py:
     python3 scripts/validate_customizations.py
+
+# Run stdlib unit tests for plugin hooks and scripts
+test-hooks:
+    @if [ -d tests ]; then \
+        python3 -m unittest discover -s tests -v; \
+    else \
+        echo "No tests/ directory found; skipping unit tests."; \
+    fi
 
 # Run strict Antigravity CLI validation on every plugin under plugins/
 validate-agy:
