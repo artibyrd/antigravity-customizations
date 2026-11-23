@@ -1,0 +1,20 @@
+{
+  "name": "prototype",
+  "displayName": "Prototype",
+  "version": "1.0.0",
+  "description": "Build a throwaway prototype to answer a design question fast: either a single-file interactive HTML logic/state-machine demo (with pure liftable logic, free-play buttons, and tabbed guided walkthroughs) or several radically different toggleable UI variations with a floating switcher bar. Adapted for Antigravity artifacts, scratch directories, and generative_ui without polluting the repo root.",
+  "author": {
+    "name": "Arthur Davis",
+    "url": "https://github.com/artibyrd"
+  },
+  "homepage": "https://github.com/artibyrd/antigravity-customizations",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/artibyrd/antigravity-customizations"
+  },
+  "suggestedPrompts": [
+    "Build a throwaway HTML logic prototype to test this state machine and edge cases",
+    "Prototype 3 radically different UI variations for this screen with a variant switcher",
+    "Help me sanity-check whether this domain workflow feels right before implementing it"
+  ]
+}
