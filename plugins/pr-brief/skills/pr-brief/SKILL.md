@@ -15,6 +15,8 @@ Drafts concise, visual-first pull request descriptions built for fast human (**M
 
 Skip all preambles and keep prose brief. Match the repository's domain vocabulary from `GLOSSARY.md` (if present; skip quietly if absent).
 
+> **Project overlay (optional):** If `.agents/overrides/pr-brief.md` exists in the workspace or repository root, read it first and apply its `Overrides`, `Extensions`, and `Disabled / Not Applicable` deltas on top of this skill.
+
 ---
 
 ## 1. Graceful Preflight

@@ -18,6 +18,8 @@ Read the bundled reference that matches your active task:
 - **When comparing alternative interfaces for a chosen candidate:** [references/design-it-twice.md](./references/design-it-twice.md) for the parallel `invoke_subagent` Design-It-Twice workflow.
 - **When auditing toolchains (`Justfile`), CLIs, web/DOM surfaces, browser tests, or dense spec/hardware docs:** [references/operational-guardrails.md](./references/operational-guardrails.md).
 
+> **Project overlay (optional):** If `.agents/overrides/architecture-review.md` exists in the workspace or repository root, read it first and apply its `Overrides`, `Extensions`, and `Disabled / Not Applicable` deltas on top of this skill.
+
 ---
 
 ## Process

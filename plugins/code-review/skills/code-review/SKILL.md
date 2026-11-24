@@ -18,6 +18,8 @@ Performs a three-axis diff review between `HEAD` and a user-supplied fixed point
 
 All three axes run as **parallel, fresh read-only subagents** via `invoke_subagent` so no axis pollutes another's context. All three reports are presented side by side without merging or reranking.
 
+> **Project overlay (optional):** If `.agents/overrides/code-review.md` exists in the workspace or repository root, read it first and apply its `Overrides`, `Extensions`, and `Disabled / Not Applicable` deltas on top of this skill.
+
 ---
 
 ## Process

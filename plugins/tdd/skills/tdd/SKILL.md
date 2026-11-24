@@ -14,6 +14,8 @@ TDD spans **two coordinated phases**—**seam & vertical-slice design during pla
 
 When exploring the codebase, read `GLOSSARY.md` (if present) so test names and interface vocabulary match the domain language, and respect any `docs/adr/` decisions in the area you touch; skip quietly if neither exists.
 
+> **Project overlay (optional):** If `.agents/overrides/tdd.md` exists in the workspace or repository root, read it first and apply its `Overrides`, `Extensions`, and `Disabled / Not Applicable` deltas on top of this skill.
+
 ---
 
 ## 1. What a Good Test Is
