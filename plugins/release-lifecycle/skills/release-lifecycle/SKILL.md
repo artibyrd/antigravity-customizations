@@ -86,6 +86,7 @@ Keep past facts and future plans strictly separated and synchronized:
 
 ### Release Boundary Symmetry Rules
 - **Move, don't duplicate:** Every milestone or feature added to `CHANGELOG.md` for `vX.Y.Z` MUST simultaneously be marked completed or graduated out of `ROADMAP.md`'s upcoming backlog.
+- **Soft roadmap targets, strict SemVer:** Version numbers in `ROADMAP.md` are soft planning targets, never reservations. Always assign the next SemVer version after current `main` for whatever ships next, and shift planned `ROADMAP.md` milestones outward to make room for prioritized interjected work.
 - **Zero speculative changelog entries:** Never record planned or unmerged work as shipped in `CHANGELOG.md`.
 - **Graceful absence:** If the repository has only one of these files—or neither—update only what exists and do not fabricate new top-level files unless the user asks.
 

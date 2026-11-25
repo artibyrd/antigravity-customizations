@@ -77,6 +77,7 @@ Keep artifacts organized and repository working trees free of temporary tooling:
 - **No inline code blobs:** Do not run multi-line `python3 -c "..."`, `node -e "..."`, or brittle nested-quote shell blobs for data processing, log inspection, or verification checks.
 - **Write repeatable scratch files:** Save one-off scripts under `<appDataDir>/brain/<conversation-id>/scratch/<descriptive_name>.py` (or `.sh`) and run them cleanly (`python3 <scratch_dir>/<script>.py`).
 - **Zero repo pollution:** Never drop temporary scripts, scratch logs, or intermediate dumps into the repository root or source directories.
+- **Right-shape formatting & plain English:** Reserve Markdown tables for genuinely uniform tabular data with short cells; present narrative summaries, multi-file indices, and audit findings as headings with one-item-per-line bullet lists, and avoid sentences packed with walls of inline backtick snippets.
 
 ---
 
